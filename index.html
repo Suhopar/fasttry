@@ -475,8 +475,8 @@
 <script>
 // ============ CONSTANTS ============
 const COLS = 9, ROWS = 15;
-const TICK_MS = 1500;
-const ALLY_SPAWN_TICKS = 4; // 6 sec / 1.5 sec = 4 ticks
+const TICK_MS = 1200;
+const ALLY_SPAWN_TICKS = 5; // 6 sec / 1.2 sec = 5 ticks
 const OBSTACLE_DENSITY = 0.3; // 30% chance per valid tile
 
 // Diagonal divider from (col 0, row 3) to (col 8, row 11) in 0-indexed
@@ -1034,25 +1034,42 @@ function updateAllyPaths() {
 
 function moveAllies() {
   game.allyPaths = {}; // Clear paths
-  
+
   for (let i = 0; i < game.allies.length; i++) {
     const ally = game.allies[i];
+    if (ally.row < 0) continue; // Skip already removed
+
     const player = game.players[ally.type];
-    
+
     // If reached player (adjacent), add HP
     if (distance(ally.row, ally.col, player.row, player.col) <= 1) {
       player.hp++;
       ally.row = -100; // Mark for removal
       continue;
     }
-    
+
     // Use BFS to find optimal path - allies CAN'T break obstacles (false parameter)
     // If path is blocked by obstacles, ally won't move
     const path = findPath(ally.row, ally.col, player.row, player.col, false);
     if (path && path.length > 0) {
-      // Check if next step is actually free (not blocked by other allies or obstacles)
       const nextStep = path[0];
-      if (!findAlly(nextStep.row, nextStep.col) && !findObstacle(nextStep.row, nextStep.col)) {
+
+      // Check for enemy ally on next step - battle!
+      const enemyAlly = findAlly(nextStep.row, nextStep.col);
+      if (enemyAlly && enemyAlly.type !== ally.type) {
+        // 50/50 random battle between allies
+        if (Math.random() < 0.5) {
+          // Current ally wins - enemy dies
+          enemyAlly.row = -100;
+        } else {
+          // Enemy ally wins - current ally dies
+          ally.row = -100;
+        }
+        continue;
+      }
+
+      // Check if next step is actually free (not blocked by own allies or obstacles)
+      if (!enemyAlly && !findObstacle(nextStep.row, nextStep.col)) {
         // Store path for visualization
         game.allyPaths[i] = path;
         // Move to next step
@@ -1061,8 +1078,8 @@ function moveAllies() {
       }
     }
   }
-  
-  // Remove absorbed allies
+
+  // Remove dead/absorbed allies
   game.allies = game.allies.filter(a => a.row >= 0);
 }
 
