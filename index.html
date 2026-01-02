@@ -3,1084 +3,1202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Редактор плиток</title>
+  <title>🐤 vs 🐸</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #e0e5ec;
       --shadow-d: #a3b1c6;
       --shadow-l: #ffffff;
-      --accent: #6d9dc5;
-      --accent-light: #8bb8db;
-      --danger: #e07a7a;
-      --text: #4a5568;
-      --text-muted: #718096;
+      --duck-color: rgba(247, 220, 111, 0.4);
+      --frog-color: rgba(139, 195, 74, 0.4);
+      --divider-color: rgba(120, 130, 150, 0.3);
     }
-    html, body { height: 100%; overflow: hidden; }
+    html, body { 
+      height: 100%; 
+      overflow: hidden;
+      touch-action: manipulation;
+    }
     body {
-      font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', system-ui, sans-serif;
+      font-family: 'Segoe UI Emoji', 'Apple Color Emoji', system-ui, sans-serif;
       background: var(--bg);
-      color: var(--text);
-      display: flex;
-      height: 100vh;
-    }
-
-    /* Neumorphic base */
-    .neu {
-      background: var(--bg);
-      border-radius: 16px;
-      box-shadow: 
-        6px 6px 12px var(--shadow-d),
-        -6px -6px 12px var(--shadow-l);
-    }
-    .neu-inset {
-      background: var(--bg);
-      border-radius: 12px;
-      box-shadow: 
-        inset 3px 3px 6px var(--shadow-d),
-        inset -3px -3px 6px var(--shadow-l);
-    }
-    .neu-flat {
-      background: var(--bg);
-      border-radius: 10px;
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
-    }
-    .neu-pressed {
-      background: var(--bg);
-      border-radius: 10px;
-      box-shadow: 
-        inset 2px 2px 5px var(--shadow-d),
-        inset -2px -2px 5px var(--shadow-l);
-    }
-
-    /* Sidebars */
-    .sidebar {
-      width: 180px;
-      padding: 12px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: var(--bg);
-    }
-    .sidebar-left { 
-      box-shadow: 6px 0 15px rgba(0,0,0,0.05);
-    }
-    .sidebar-right { 
-      box-shadow: -6px 0 15px rgba(0,0,0,0.05);
-    }
-
-    .panel {
-      padding: 12px;
-      border-radius: 16px;
-      background: var(--bg);
-      overflow: hidden;
-      box-shadow: 
-        inset 4px 4px 8px var(--shadow-d),
-        inset -4px -4px 8px var(--shadow-l);
-    }
-    .panel-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Main area */
-    .main {
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-    }
-
-    /* Board wrapper - no border, just water */
-    .board-wrap {
-      position: relative;
+      min-height: 100vh;
       padding: 10px;
-      background: transparent;
     }
 
-    /* Wave background - water effect */
-    .wave-bg {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border-radius: 16px;
-      overflow: hidden;
-      pointer-events: none;
-      background: linear-gradient(180deg, 
-        rgba(93, 173, 226, 0.2) 0%,
-        rgba(52, 152, 219, 0.3) 50%,
-        rgba(41, 128, 185, 0.25) 100%);
-    }
-    
-    /* Water layers */
-    .wave-bg::before,
-    .wave-bg::after {
-      content: '';
-      position: absolute;
-      left: -50%;
-      width: 200%;
-      height: 100%;
-      background-repeat: no-repeat;
-    }
-    
-    .wave-bg::before {
-      top: 0;
-      background: linear-gradient(180deg,
-        rgba(52, 152, 219, 0.4) 0%,
-        rgba(41, 128, 185, 0.2) 30%,
-        transparent 60%);
-      animation: wave-flow-1 15s ease-in-out infinite;
-    }
-    
-    .wave-bg::after {
-      top: 0;
-      background: linear-gradient(180deg,
-        rgba(93, 173, 226, 0.3) 0%,
-        rgba(52, 152, 219, 0.15) 40%,
-        transparent 70%);
-      animation: wave-flow-2 20s ease-in-out infinite;
-    }
-    
-    @keyframes wave-flow-1 {
-      0% { 
-        transform: translateY(-100%) translateX(0%);
-      }
-      50% {
-        transform: translateY(50%) translateX(10%);
-      }
-      100% { 
-        transform: translateY(100%) translateX(0%);
-      }
-    }
-    
-    @keyframes wave-flow-2 {
-      0% { 
-        transform: translateY(-80%) translateX(5%);
-      }
-      50% {
-        transform: translateY(30%) translateX(-5%);
-      }
-      100% { 
-        transform: translateY(120%) translateX(5%);
-      }
-    }
-
-    /* Extra shimmer layer */
-    .wave-shimmer {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border-radius: 16px;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-    
-    .wave-shimmer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 200%;
-      height: 100%;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.2) 25%,
-        rgba(255,255,255,0.3) 50%,
-        rgba(255,255,255,0.2) 75%,
-        transparent 100%);
-      animation: shimmer 15s linear infinite;
-    }
-    
-    .wave-shimmer::after {
-      content: '';
-      position: absolute;
-      top: -100%;
-      left: 0;
+    /* HUD */
+    .hud {
+      display: flex;
+      justify-content: space-between;
       width: 100%;
-      height: 200%;
-      background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(100, 180, 255, 0.15) 40%,
-        rgba(50, 150, 220, 0.25) 50%,
-        rgba(100, 180, 255, 0.15) 60%,
-        transparent 100%);
-      animation: wave-vertical 12s ease-in-out infinite;
+      max-width: 320px;
+      margin-bottom: 10px;
+      gap: 10px;
     }
-    
-    @keyframes shimmer {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(100%); }
-    }
-    
-    @keyframes wave-vertical {
-      0%, 100% { transform: translateY(0%); }
-      50% { transform: translateY(50%); }
-    }
-
-    /* Ripple circles */
-    .wave-ripples {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+    .player-info {
+      flex: 1;
+      padding: 10px 15px;
       border-radius: 16px;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    .wave-ripples::before,
-    .wave-ripples::after {
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      border: 3px solid rgba(52, 152, 219, 0.4);
-      animation: ripple 15s ease-out infinite;
-    }
-    
-    .wave-ripples::before {
-      width: 40px;
-      height: 40px;
-      top: 25%;
-      left: 20%;
-      animation-delay: 0s;
-    }
-    
-    .wave-ripples::after {
-      width: 30px;
-      height: 30px;
-      bottom: 35%;
-      right: 15%;
-      animation-delay: 7.5s;
-    }
-    
-    @keyframes ripple {
-      0% {
-        transform: scale(0.3);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(4);
-        opacity: 0;
-      }
-    }
-
-    /* Flowing wave band */
-    .wave-flow {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border-radius: 16px;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    .wave-flow::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -20%;
-      width: 140%;
-      height: 80%;
-      background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(100, 200, 255, 0.2) 45%,
-        rgba(50, 150, 230, 0.35) 50%,
-        rgba(100, 200, 255, 0.2) 55%,
-        transparent 100%);
-      border-radius: 50%;
-      animation: flow-down 10s ease-in-out infinite;
-    }
-    
-    .wave-flow::after {
-      content: '';
-      position: absolute;
-      top: -30%;
-      left: -10%;
-      width: 120%;
-      height: 60%;
-      background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(150, 220, 255, 0.15) 45%,
-        rgba(80, 180, 240, 0.25) 50%,
-        rgba(150, 220, 255, 0.15) 55%,
-        transparent 100%);
-      border-radius: 50%;
-      animation: flow-down 10s ease-in-out infinite;
-      animation-delay: 5s;
-    }
-    
-    @keyframes flow-down {
-      0% {
-        transform: translateY(0%) scaleX(1);
-        opacity: 0.8;
-      }
-      50% {
-        transform: translateY(100%) scaleX(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(200%) scaleX(1);
-        opacity: 0.8;
-      }
-    }
-
-    .board {
-      position: relative;
-      display: grid;
-      grid-template-columns: repeat(9, 1fr);
-      grid-template-rows: repeat(15, 1fr);
-      gap: 4px;
-      width: min(calc(100vw - 400px), 280px);
-      aspect-ratio: 9 / 15;
-      z-index: 2;
-    }
-
-    /* Tiles - Neumorphic */
-    .tile {
-      border-radius: 8px;
       background: var(--bg);
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      cursor: pointer;
-      position: relative;
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
-      transition: all 0.15s ease;
-      border: 2px solid transparent;
-    }
-    .tile:hover {
+      gap: 10px;
       box-shadow: 
         4px 4px 8px var(--shadow-d),
         -4px -4px 8px var(--shadow-l);
     }
-    .tile:active { 
+    .player-info.duck { border: 2px solid var(--duck-color); }
+    .player-info.frog { border: 2px solid var(--frog-color); }
+    .player-icon { font-size: 1.5rem; }
+    .player-hp {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e74c3c;
+    }
+    .player-totem {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    /* Board */
+    .board-container {
+      position: relative;
+    }
+    
+    .board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(15, 1fr);
+      gap: 3px;
+      width: min(calc(100vw - 20px), 300px);
+      aspect-ratio: 9 / 15;
+      padding: 8px;
+      border-radius: 16px;
+      background: var(--bg);
+      box-shadow: 
+        8px 8px 16px var(--shadow-d),
+        -8px -8px 16px var(--shadow-l);
+    }
+
+    /* Tiles */
+    .tile {
+      border-radius: 6px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l);
+      transition: transform 0.1s, box-shadow 0.1s;
+      border: 2px solid transparent;
+    }
+    .tile:active {
+      transform: scale(0.95);
       box-shadow: 
         inset 2px 2px 4px var(--shadow-d),
         inset -2px -2px 4px var(--shadow-l);
     }
-    .tile.drag-over { 
-      transform: scale(1.08); 
-      z-index: 5;
-      box-shadow: 
-        5px 5px 10px var(--shadow-d),
-        -5px -5px 10px var(--shadow-l),
-        0 0 0 3px var(--accent);
-    }
-    .tile.dragging { opacity: 0.4; }
-    .tile.path-point { 
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l),
-        0 0 0 3px var(--danger);
+    
+    /* Divider diagonal - tiles on the diagonal line */
+    .tile.divider {
+      border: 2px solid rgba(120, 130, 150, 0.5);
     }
 
-    /* Border colors - subtle */
-    .tile[data-color="none"] { border-color: transparent; }
-    .tile[data-color="blue"] { border-color: rgba(93, 173, 226, 0.5); }
-    .tile[data-color="cyan"] { border-color: rgba(72, 201, 176, 0.5); }
-    .tile[data-color="green"] { border-color: rgba(88, 214, 141, 0.5); }
-    .tile[data-color="lime"] { border-color: rgba(174, 213, 129, 0.5); }
-    .tile[data-color="yellow"] { border-color: rgba(247, 220, 111, 0.6); }
-    .tile[data-color="orange"] { border-color: rgba(245, 176, 65, 0.5); }
-    .tile[data-color="red"] { border-color: rgba(236, 112, 99, 0.5); }
-    .tile[data-color="pink"] { border-color: rgba(241, 148, 138, 0.5); }
-    .tile[data-color="purple"] { border-color: rgba(187, 143, 206, 0.5); }
-    .tile[data-color="brown"] { border-color: rgba(161, 136, 127, 0.5); }
-    .tile[data-color="gray"] { border-color: rgba(130, 130, 130, 0.4); }
+    /* King zones */
+    .tile.duck-zone {
+      border-color: var(--duck-color);
+    }
+    .tile.frog-zone {
+      border-color: var(--frog-color);
+    }
 
-    /* Kings - elevated */
+    /* Kings */
     .tile.king {
       grid-column: span 2;
       grid-row: span 2;
       font-size: 2rem;
       cursor: default;
-      z-index: 10;
-      border-radius: 12px;
-      box-shadow: 
-        6px 6px 12px var(--shadow-d),
-        -6px -6px 12px var(--shadow-l);
-    }
-    .tile.duck-king { 
-      grid-column: 8/10; 
-      grid-row: 1/3; 
-      border-color: rgba(247, 220, 111, 0.6);
-    }
-    .tile.frog-king { 
-      grid-column: 1/3; 
-      grid-row: 14/16; 
-      border-color: rgba(174, 213, 129, 0.6);
-    }
-
-    /* Color grid */
-    .color-grid { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      gap: 6px;
-    }
-    .color-btn {
-      aspect-ratio: 1;
-      width: 100%;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
-    }
-    .color-btn:hover { transform: scale(1.05); }
-    .color-btn.selected { 
-      box-shadow: 
-        inset 2px 2px 4px var(--shadow-d),
-        inset -2px -2px 4px var(--shadow-l);
-    }
-    .color-btn[data-c="none"] { background: var(--bg); }
-    .color-btn[data-c="blue"] { background: linear-gradient(145deg, #6db3e8, #5296c4); }
-    .color-btn[data-c="cyan"] { background: linear-gradient(145deg, #52d4bc, #3eb5a0); }
-    .color-btn[data-c="green"] { background: linear-gradient(145deg, #64e09b, #4cc282); }
-    .color-btn[data-c="lime"] { background: linear-gradient(145deg, #bedf8d, #9ec076); }
-    .color-btn[data-c="yellow"] { background: linear-gradient(145deg, #ffe27a, #dfc465); }
-    .color-btn[data-c="orange"] { background: linear-gradient(145deg, #ffc14d, #dfa33a); }
-    .color-btn[data-c="red"] { background: linear-gradient(145deg, #f28076, #d46259); }
-    .color-btn[data-c="pink"] { background: linear-gradient(145deg, #f7a8a0, #d88b83); }
-    .color-btn[data-c="purple"] { background: linear-gradient(145deg, #caa0de, #ab82bf); }
-    .color-btn[data-c="brown"] { background: linear-gradient(145deg, #b39890, #947b74); }
-    .color-btn[data-c="gray"] { background: linear-gradient(145deg, #b8b8b8, #9a9a9a); }
-
-    /* Emoji buttons */
-    .emoji-row { 
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 5px; 
-    }
-    .emoji-btn {
-      aspect-ratio: 1;
-      width: 100%;
-      border: none; 
-      border-radius: 8px;
-      background: var(--bg);
-      font-size: 1.1rem;
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-      box-shadow: 
-        2px 2px 4px var(--shadow-d),
-        -2px -2px 4px var(--shadow-l);
-    }
-    .emoji-btn:hover { 
-      transform: scale(1.05);
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
-    }
-    .emoji-btn:active {
-      box-shadow: 
-        inset 2px 2px 4px var(--shadow-d),
-        inset -2px -2px 4px var(--shadow-l);
-    }
-
-    /* Category buttons */
-    .cat-row { 
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-      margin-bottom: 8px; 
-    }
-    .cat-btn {
-      aspect-ratio: 1;
-      width: 100%;
-      border: none; 
-      border-radius: 6px;
-      background: var(--bg);
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-      box-shadow: 
-        2px 2px 4px var(--shadow-d),
-        -2px -2px 4px var(--shadow-l);
-    }
-    .cat-btn:hover { transform: scale(1.03); }
-    .cat-btn.active { 
-      box-shadow: 
-        inset 2px 2px 4px var(--shadow-d),
-        inset -2px -2px 4px var(--shadow-l);
-    }
-
-    .emoji-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 5px;
-      max-height: 120px;
-      overflow-y: auto;
-      padding: 2px;
-    }
-    
-    .emoji-grid .emoji-btn {
-      font-size: 1rem;
-    }
-
-    /* Animation panel */
-    .anim-section { margin-bottom: 12px; }
-    .anim-label { 
-      font-size: 0.7rem; 
-      color: var(--text-muted); 
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-    
-    .speed-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 12px;
-      background: var(--bg);
-      box-shadow: 
-        inset 2px 2px 4px var(--shadow-d),
-        inset -2px -2px 4px var(--shadow-l);
-    }
-    .speed-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      height: 8px;
-      border-radius: 4px;
-      background: var(--bg);
-      box-shadow: 
-        inset 1px 1px 3px var(--shadow-d),
-        inset -1px -1px 3px var(--shadow-l);
-    }
-    .speed-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px; 
-      height: 20px;
-      border-radius: 50%;
-      background: linear-gradient(145deg, var(--accent-light), var(--accent));
-      cursor: pointer;
-      box-shadow: 
-        2px 2px 4px var(--shadow-d),
-        -1px -1px 3px var(--shadow-l);
-    }
-    .speed-val { 
-      font-size: 0.85rem; 
-      font-weight: 700; 
-      min-width: 28px;
-      color: var(--accent);
-    }
-
-    .path-list {
-      max-height: 140px;
-      overflow-y: auto;
-      padding: 4px;
-    }
-    .path-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      margin-bottom: 6px;
-      border-radius: 12px;
-      background: var(--bg);
-      font-size: 0.8rem;
-      box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
-    }
-    .path-emoji { font-size: 1.2rem; }
-    .path-info { 
-      flex: 1; 
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-    .path-del {
-      width: 24px; 
-      height: 24px;
-      border: none; 
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--danger);
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 
-        2px 2px 4px var(--shadow-d),
-        -2px -2px 4px var(--shadow-l);
-    }
-    .path-del:hover {
-      background: var(--danger);
-      color: white;
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 10px 12px;
-      border: none;
       border-radius: 10px;
-      font-size: 0.75rem;
+      box-shadow: 
+        4px 4px 8px var(--shadow-d),
+        -4px -4px 8px var(--shadow-l);
+    }
+    .tile.duck-king {
+      grid-column: 8 / 10;
+      grid-row: 1 / 3;
+      border: 3px solid var(--duck-color);
+    }
+    .tile.frog-king {
+      grid-column: 1 / 3;
+      grid-row: 14 / 16;
+      border: 3px solid var(--frog-color);
+    }
+
+    /* Game objects */
+    .tile.obstacle {
+      background: rgba(200, 200, 200, 0.5);
+    }
+    .tile.player {
+      z-index: 10;
+      box-shadow: 
+        3px 3px 6px var(--shadow-d),
+        -3px -3px 6px var(--shadow-l),
+        0 0 0 2px rgba(100, 150, 255, 0.5);
+    }
+    .tile.ally {
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+    
+    /* Path visualization for allies */
+    .tile.ally-path-duck::before {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(247, 220, 111, 0.6);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .tile.ally-path-frog::before {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(139, 195, 74, 0.6);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    /* Player target path visualization */
+    .tile.player-path {
+      box-shadow: 
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l),
+        inset 0 0 8px rgba(100, 150, 255, 0.4);
+    }
+    .tile.totem {
+      animation: totem-glow 2s ease-in-out infinite;
+    }
+    @keyframes totem-glow {
+      0%, 100% { box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l); }
+      50% { box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 10px rgba(255, 215, 0, 0.5); }
+    }
+
+    /* Highlight for valid moves */
+    .tile.highlight {
+      box-shadow: 
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l),
+        0 0 0 3px rgba(100, 200, 100, 0.5);
+    }
+
+    /* Totem indicator on player */
+    .totem-indicator {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.6rem;
+      background: white;
+      border-radius: 50%;
+      padding: 2px;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    /* HP badge on player */
+    .hp-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Controls */
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
       background: var(--bg);
-      color: var(--text);
-      width: 100%;
-      margin-top: 6px;
-      transition: all 0.15s ease;
+      color: #333;
       box-shadow: 
-        3px 3px 6px var(--shadow-d),
-        -3px -3px 6px var(--shadow-l);
+        4px 4px 8px var(--shadow-d),
+        -4px -4px 8px var(--shadow-l);
     }
-    .btn:hover {
-      box-shadow: 
-        5px 5px 10px var(--shadow-d),
-        -5px -5px 10px var(--shadow-l);
-    }
-    .btn:active { 
+    .btn:active {
       box-shadow: 
         inset 3px 3px 6px var(--shadow-d),
         inset -3px -3px 6px var(--shadow-l);
     }
-    .btn.active { 
-      background: linear-gradient(145deg, var(--accent-light), var(--accent));
-      color: white;
-      box-shadow: 
-        inset 2px 2px 4px rgba(0,0,0,0.1),
-        inset -2px -2px 4px rgba(255,255,255,0.1);
-    }
-    .btn.recording { 
-      background: linear-gradient(145deg, #ef8f8f, var(--danger));
-      color: white;
-    }
 
-    .no-paths {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    /* Turn indicator */
+    .turn-info {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #666;
       text-align: center;
-      padding: 15px 10px;
-      font-style: italic;
     }
 
-    /* Recording indicator */
-    .board-wrap.recording .wave-bg {
-      animation: rec-pulse 1.5s ease-in-out infinite;
+    /* Winner modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
     }
-    @keyframes rec-pulse {
-      0%, 100% { 
-        box-shadow: inset 0 0 20px rgba(224, 122, 122, 0.3);
-      }
-      50% { 
-        box-shadow: inset 0 0 40px rgba(224, 122, 122, 0.5);
-      }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: var(--bg);
+      padding: 30px 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 
+        10px 10px 20px var(--shadow-d),
+        -10px -10px 20px var(--shadow-l);
     }
-
-    @media (max-width: 750px) {
-      body { flex-direction: column; }
-      .sidebar { 
-        width: 100%; 
-        max-height: 38vh; 
-        flex-direction: row; 
-        flex-wrap: wrap;
-        padding: 10px;
-        gap: 10px;
-      }
-      .sidebar .panel { flex: 1; min-width: 150px; }
-      .sidebar-left { order: 2; }
-      .sidebar-right { order: 3; }
-      .main { order: 1; padding: 15px; }
-      .board { width: min(calc(100vw - 30px), 260px); }
+    .modal-content h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .modal-content p {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    /* Character selection */
+    .select-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .select-btn {
+      padding: 20px 30px;
+      border: none;
+      border-radius: 16px;
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
+      transition: all 0.2s;
+    }
+    .select-btn:hover {
+      transform: scale(1.05);
+    }
+    .select-btn:active {
+      box-shadow: 
+        inset 4px 4px 8px var(--shadow-d),
+        inset -4px -4px 8px var(--shadow-l);
+    }
+    .select-btn.duck-select:hover {
+      box-shadow: 
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l),
+        0 0 0 3px var(--duck-color);
+    }
+    .select-btn.frog-select:hover {
+      box-shadow: 
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l),
+        0 0 0 3px var(--frog-color);
+    }
+    .select-icon {
+      font-size: 3rem;
+    }
+    .select-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    /* AI indicator */
+    .player-info.ai::after {
+      content: '🤖';
+      margin-left: 5px;
     }
   </style>
 </head>
 <body>
 
-<!-- Left sidebar - Animation -->
-<div class="sidebar sidebar-left">
-  <div class="panel">
-    <div class="panel-title">🎬 Анімації</div>
-    
-    <div class="anim-section">
-      <div class="anim-label">Швидкість</div>
-      <div class="speed-control">
-        <input type="range" class="speed-slider" id="speedSlider" min="0.5" max="5" step="0.5" value="1">
-        <span class="speed-val" id="speedVal">1×</span>
-      </div>
+<!-- Character Selection Modal -->
+<div class="modal show" id="selectModal">
+  <div class="modal-content">
+    <h2>🎮 Обери персонажа</h2>
+    <p>За кого будеш грати?</p>
+    <div class="select-buttons">
+      <button class="select-btn duck-select" onclick="selectCharacter('duck')">
+        <span class="select-icon">🐤</span>
+        <span class="select-name">Каченя</span>
+      </button>
+      <button class="select-btn frog-select" onclick="selectCharacter('frog')">
+        <span class="select-icon">🐸</span>
+        <span class="select-name">Жабка</span>
+      </button>
     </div>
-
-    <div class="anim-section">
-      <div class="anim-label">Маршрути</div>
-      <div class="path-list" id="pathList"></div>
-    </div>
-
-    <button class="btn" id="recordBtn">🔴 Записати</button>
-    <button class="btn" id="playBtn">▶️ Старт</button>
-    <button class="btn" id="clearPathsBtn">🗑️ Очистити</button>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">💾 Файл</div>
-    <button class="btn" id="saveBtn">💾 Зберегти</button>
-    <button class="btn" id="loadBtn">📂 Відкрити</button>
-    <button class="btn" id="resetBtn">🔄 Скинути</button>
   </div>
 </div>
 
-<!-- Main board -->
-<div class="main">
-  <div class="board-wrap" id="boardWrap">
-    <div class="wave-bg"></div>
-    <div class="wave-shimmer"></div>
-    <div class="wave-ripples"></div>
-    <div class="wave-flow"></div>
-    <div class="board" id="board"></div>
+<!-- HUD -->
+<div class="hud">
+  <div class="player-info duck">
+    <span class="player-icon">🐤</span>
+    <span class="player-hp" id="duckHp">❤️ 1</span>
+    <span class="player-totem" id="duckTotem"></span>
+  </div>
+  <div class="player-info frog">
+    <span class="player-icon">🐸</span>
+    <span class="player-hp" id="frogHp">❤️ 1</span>
+    <span class="player-totem" id="frogTotem"></span>
   </div>
 </div>
 
-<!-- Right sidebar - Colors & Emoji -->
-<div class="sidebar sidebar-right">
-  <div class="panel">
-    <div class="panel-title">🎨 Грань</div>
-    <div class="color-grid" id="colorGrid"></div>
-  </div>
+<!-- Board -->
+<div class="board-container">
+  <div class="board" id="board"></div>
+</div>
 
-  <div class="panel">
-    <div class="panel-title">⭐ Швидкі</div>
-    <div class="emoji-row" id="quickEmoji"></div>
-  </div>
+<!-- Controls -->
+<div class="controls">
+  <button class="btn" onclick="resetGame()">🔄 Нова гра</button>
+</div>
 
-  <div class="panel">
-    <div class="panel-title">😀 Емодзі</div>
-    <div class="cat-row" id="catRow"></div>
-    <div class="emoji-grid" id="emojiGrid"></div>
+<div class="turn-info" id="turnInfo">Тік: 0 | Клікни на плитку щоб рухатись</div>
+
+<!-- Winner Modal -->
+<div class="modal" id="winModal">
+  <div class="modal-content">
+    <h2 id="winnerText">🏆</h2>
+    <p id="winnerDesc">Переміг!</p>
+    <button class="btn" onclick="resetGame(); closeModal();">Грати знову</button>
   </div>
 </div>
 
 <script>
+// ============ CONSTANTS ============
 const COLS = 9, ROWS = 15;
-const COLORS = ['none','blue','cyan','green','lime','yellow','orange','red','pink','purple','brown','gray'];
-const EMOJIS = {
-  '😀': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😋','😎','🤓','🥳','😏','😢','😭','😤','😠','😈','👿','💀','👻','👽','🤖'],
-  '🐱': ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🐺','🦄','🐝','🦋','🐌','🐞','🐢','🐍','🐙','🦀','🐬','🐳'],
-  '🍎': ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🥦','🥒','🌽','🥕','🥔','🍞','🧀','🥚','🍳','🍗','🍔','🍟','🍕','🌮','🍜','🍣','🍩','🎂'],
-  '⚽': ['⚽','🏀','🏈','⚾','🎾','🏐','🎱','🏓','🏸','🥊','🥋','🏆','🥇','🥈','🥉','🎮','🎲','🎯','🎳','🎨','🎬','🎤','🎧','🎹','🥁','🎷','🎸','🎻','🎺','🎭'],
-  '🚗': ['🚗','🚕','🚙','🚌','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🏍','🚲','🚁','🚀','✈','🚢','🚂','🚃','🚄','🚅','🚇','🛸','🚤','⛵','🛵'],
-  '💎': ['💎','💍','👑','💰','💵','💳','🏆','🎁','🎀','🎊','🎉','🎈','✨','💫','⭐','🌟','💥','🔥','❤','🧡','💛','💚','💙','💜','🖤','🤍','💯','💢'],
-  '🏠': ['🏠','🏡','🏢','🏥','🏦','🏨','🏪','🏫','🏭','🏯','🏰','🗼','🗽','⛪','🕌','⛩','⛲','🌃','🌄','🌅','🌆','🌇','🌉','🎠','🎡','🎢'],
-  '☀': ['☀','🌤','⛅','☁','🌧','🌩','🌨','❄','☃','⛄','💨','💧','☔','🌊','🌈','🌙','🌛','🌜','🌚','🌝','🌞','🪐','🌍','🌑','🌕','🌌','⚡','🔥'],
+const TICK_MS = 1500;
+const ALLY_SPAWN_TICKS = 4; // 6 sec / 1.5 sec = 4 ticks
+const OBSTACLE_DENSITY = 0.3; // 30% chance per valid tile
+
+// Diagonal divider from (col 0, row 3) to (col 8, row 11) in 0-indexed
+// In 1-indexed: (1, 4) to (9, 12)
+
+// Emoji
+const EMOJI = {
+  duckKing: '🐤',
+  frogKing: '🐸',
+  duckPlayer: '🐥',
+  frogPlayer: '🐸',
+  duckAlly: '🐣',
+  frogAlly: '🐸',
+  snakeTotem: '🐍',
+  duckTotem: '🦆',
+  wave: '🌊',
+  bush: '🌿'
 };
-const QUICK = ['🐤','🐸','⭐','❤','🔥','💎','🌊','🌿','🎈','🚀'];
 
-let board = [], tiles = [];
-let selectedColor = 'none', currentCat = '😀', dragData = null;
-let paths = [], isPlaying = false, isRecording = false;
-let recordingPath = [], recordingEmoji = '';
-let tickSpeed = 1, tickTimer = null;
+// ============ GAME STATE ============
+let game = {
+  tick: 0,
+  tickTimer: null,
+  
+  humanPlayer: null, // 'duck' or 'frog'
+  aiPlayer: null,    // opposite of humanPlayer
+  
+  players: {
+    duck: { row: 0, col: 5, hp: 1, hasTotem: false, targetPath: [] },
+    frog: { row: 14, col: 3, hp: 1, hasTotem: false, targetPath: [] }
+  },
+  
+  totems: {
+    snake: { row: 0, col: 0, owner: 'frog', pickedBy: null },
+    duck: { row: 14, col: 8, owner: 'duck', pickedBy: null }
+  },
+  
+  allies: [],
+  allyPaths: {}, // Store paths for visualization
+  obstacles: [],
+  
+  gameOver: false,
+  gameStarted: false
+};
 
-const $ = id => document.getElementById(id);
-const boardEl = $('board'), boardWrap = $('boardWrap');
-const colorGridEl = $('colorGrid'), quickEmojiEl = $('quickEmoji');
-const catRowEl = $('catRow'), emojiGridEl = $('emojiGrid');
-const pathListEl = $('pathList'), speedSlider = $('speedSlider');
-const speedVal = $('speedVal'), recordBtn = $('recordBtn'), playBtn = $('playBtn');
+// ============ HELPERS ============
+const isKingTile = (r, c) => {
+  // Duck king: cols 7-8, rows 0-1
+  if (c >= 7 && c <= 8 && r >= 0 && r <= 1) return 'duck';
+  // Frog king: cols 0-1, rows 13-14
+  if (c >= 0 && c <= 1 && r >= 13 && r <= 14) return 'frog';
+  return null;
+};
 
-const isKing = (r, c) => (c >= 7 && r <= 1) || (c <= 1 && r >= 13);
+const isKingZone = (r, c) => {
+  // Duck zone: around duck king (cols 6-8, rows 0-2, excluding king)
+  if (c >= 6 && c <= 8 && r >= 0 && r <= 2 && !isKingTile(r, c)) {
+    if (c === 6 || r === 2) return 'duck';
+  }
+  // Frog zone: around frog king (cols 0-2, rows 12-14, excluding king)
+  if (c >= 0 && c <= 2 && r >= 12 && r <= 14 && !isKingTile(r, c)) {
+    if (c === 2 || r === 12) return 'frog';
+  }
+  return null;
+};
 
-function init() {
-  board = [];
+// Diagonal: row = col + 3
+const isDivider = (r, c) => r === c + 3;
+
+const getTerritory = (r, c) => {
+  // Above diagonal (r < c + 3) = duck territory (top-right)
+  // Below diagonal (r > c + 3) = frog territory (bottom-left)
+  if (r < c + 3) return 'duck';
+  if (r > c + 3) return 'frog';
+  return 'neutral'; // On the diagonal
+};
+
+const findObstacle = (r, c) => game.obstacles.find(o => o.row === r && o.col === c);
+const findAlly = (r, c) => game.allies.find(a => a.row === r && a.col === c);
+const findPlayer = (r, c) => {
+  if (game.players.duck.row === r && game.players.duck.col === c) return 'duck';
+  if (game.players.frog.row === r && game.players.frog.col === c) return 'frog';
+  return null;
+};
+const findTotem = (r, c) => {
+  for (let key in game.totems) {
+    const t = game.totems[key];
+    if (t.row === r && t.col === c && !t.pickedBy) return key;
+  }
+  return null;
+};
+
+const isTileBlocked = (r, c) => {
+  if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return true;
+  if (isKingTile(r, c)) return true;
+  if (findObstacle(r, c)) return true;
+  if (findPlayer(r, c)) return true;
+  if (findAlly(r, c)) return true;
+  return false;
+};
+
+const distance = (r1, c1, r2, c2) => Math.abs(r1 - r2) + Math.abs(c1 - c2);
+
+// ============ INIT ============
+function initGame() {
+  game.tick = 0;
+  game.gameOver = false;
+  game.gameStarted = false;
+  game.humanPlayer = null;
+  game.aiPlayer = null;
+  
+  // Reset players
+  game.players.duck = { row: 0, col: 5, hp: 1, hasTotem: false, targetPath: [] };
+  game.players.frog = { row: 14, col: 3, hp: 1, hasTotem: false, targetPath: [] };
+  
+  // Reset totems
+  game.totems.snake = { row: 0, col: 0, owner: 'frog', pickedBy: null };
+  game.totems.duck = { row: 14, col: 8, owner: 'duck', pickedBy: null };
+  
+  // Clear allies
+  game.allies = [];
+  game.allyPaths = {};
+  
+  // Generate obstacles
+  game.obstacles = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (!isKing(r, c)) board.push({ r, c, color: 'none', emoji: '' });
+      if (isKingTile(r, c)) continue;
+      if (isKingZone(r, c)) continue;
+      if (isDivider(r, c)) continue; // Skip divider tiles
+      
+      // Don't place on player start positions
+      if (r === 0 && c === 5) continue; // duck start
+      if (r === 14 && c === 3) continue; // frog start
+      
+      // Don't place on totem positions
+      if (r === 0 && c === 0) continue; // snake totem
+      if (r === 14 && c === 8) continue; // duck totem
+      
+      if (Math.random() < OBSTACLE_DENSITY) {
+        const territory = getTerritory(r, c);
+        if (territory === 'duck') {
+          game.obstacles.push({ row: r, col: c, type: 'wave' });
+        } else if (territory === 'frog') {
+          game.obstacles.push({ row: r, col: c, type: 'bush' });
+        }
+      }
     }
   }
-  renderBoard(); renderColors(); renderQuickEmoji();
-  renderCats(); renderEmojis(); renderPaths(); setupEvents();
+  
+  render();
+  updateHUD();
 }
 
-function renderBoard() {
-  boardEl.innerHTML = ''; tiles = [];
-  const dk = document.createElement('div');
-  dk.className = 'tile king duck-king'; dk.textContent = '🐤';
-  boardEl.appendChild(dk);
-  const fk = document.createElement('div');
-  fk.className = 'tile king frog-king'; fk.textContent = '🐸';
-  boardEl.appendChild(fk);
-  board.forEach((t, i) => {
-    const el = document.createElement('div');
-    el.className = 'tile'; el.dataset.idx = i; el.dataset.color = t.color;
-    el.style.gridColumn = t.c + 1; el.style.gridRow = t.r + 1;
-    if (t.emoji) { el.textContent = t.emoji; el.draggable = true; }
-    tiles[i] = el; boardEl.appendChild(el);
-  });
+// ============ RENDER ============
+function render() {
+  // Update ally paths for visualization
+  updateAllyPaths();
+  
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  
+  // Kings first
+  const duckKing = document.createElement('div');
+  duckKing.className = 'tile king duck-king';
+  duckKing.textContent = EMOJI.duckKing;
+  boardEl.appendChild(duckKing);
+  
+  const frogKing = document.createElement('div');
+  frogKing.className = 'tile king frog-king';
+  frogKing.textContent = EMOJI.frogKing;
+  boardEl.appendChild(frogKing);
+  
+  // All tiles
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingTile(r, c)) continue;
+      
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.dataset.row = r;
+      tile.dataset.col = c;
+      tile.style.gridColumn = c + 1;
+      tile.style.gridRow = r + 1;
+      
+      // Zone styling
+      const zone = isKingZone(r, c);
+      if (zone === 'duck') tile.classList.add('duck-zone');
+      if (zone === 'frog') tile.classList.add('frog-zone');
+      
+      // Divider diagonal styling
+      if (isDivider(r, c)) tile.classList.add('divider');
+      
+      // Check if tile is on ally path
+      const getAllyPathType = () => {
+        for (let i = 0; i < game.allies.length; i++) {
+          const path = game.allyPaths[i];
+          if (path && path.some(p => p.row === r && p.col === c)) {
+            return game.allies[i].type;
+          }
+        }
+        return null;
+      };
+      
+      // Content
+      let content = '';
+      let extraClass = '';
+      let badges = '';
+      
+      // Path visualization (before obstacles so it shows under them)
+      const pathType = getAllyPathType();
+      if (pathType && !findObstacle(r, c) && !findPlayer(r, c) && !findAlly(r, c)) {
+        tile.classList.add(`ally-path-${pathType}`);
+      }
+      
+      // Human player target path visualization
+      if (game.humanPlayer) {
+        const humanPath = game.players[game.humanPlayer].targetPath;
+        if (humanPath && humanPath.some(p => p.row === r && p.col === c)) {
+          tile.classList.add('player-path');
+        }
+      }
+      
+      // Obstacles
+      const obstacle = findObstacle(r, c);
+      if (obstacle) {
+        content = obstacle.type === 'wave' ? EMOJI.wave : EMOJI.bush;
+        extraClass = 'obstacle';
+      }
+      
+      // Totems
+      const totemKey = findTotem(r, c);
+      if (totemKey) {
+        content = totemKey === 'snake' ? EMOJI.snakeTotem : EMOJI.duckTotem;
+        extraClass = 'totem';
+      }
+      
+      // Allies
+      const ally = findAlly(r, c);
+      if (ally) {
+        content = ally.type === 'duck' ? EMOJI.duckAlly : EMOJI.frogAlly;
+        extraClass = 'ally';
+      }
+      
+      // Players
+      const playerType = findPlayer(r, c);
+      if (playerType) {
+        const player = game.players[playerType];
+        content = playerType === 'duck' ? EMOJI.duckPlayer : EMOJI.frogPlayer;
+        extraClass = 'player';
+        
+        // HP badge
+        badges += `<span class="hp-badge">${player.hp}</span>`;
+        
+        // Totem indicator
+        if (player.hasTotem) {
+          const totemEmoji = playerType === 'duck' ? EMOJI.duckTotem : EMOJI.snakeTotem;
+          badges += `<span class="totem-indicator">${totemEmoji}</span>`;
+        }
+      }
+      
+      tile.innerHTML = content + badges;
+      if (extraClass) tile.classList.add(extraClass);
+      
+      // Click handler
+      tile.onclick = () => handleTileClick(r, c);
+      
+      boardEl.appendChild(tile);
+    }
+  }
 }
 
-function updateTile(i) {
-  const t = board[i], el = tiles[i];
-  if (!el) return;
-  el.dataset.color = t.color;
-  el.textContent = t.emoji || '';
-  el.draggable = !!t.emoji;
+function updateHUD() {
+  document.getElementById('duckHp').textContent = `❤️ ${game.players.duck.hp}`;
+  document.getElementById('frogHp').textContent = `❤️ ${game.players.frog.hp}`;
+  document.getElementById('duckTotem').textContent = game.players.duck.hasTotem ? '🦆' : '';
+  document.getElementById('frogTotem').textContent = game.players.frog.hasTotem ? '🐍' : '';
+  
+  let turnText = `Тік: ${game.tick}`;
+  if (game.humanPlayer) {
+    const emoji = game.humanPlayer === 'duck' ? '🐤' : '🐸';
+    turnText += ` | Ти граєш за ${emoji}`;
+  }
+  document.getElementById('turnInfo').textContent = turnText;
 }
 
-function renderColors() {
-  colorGridEl.innerHTML = '';
-  COLORS.forEach(c => {
-    const btn = document.createElement('div');
-    btn.className = 'color-btn' + (c === selectedColor ? ' selected' : '');
-    btn.dataset.c = c; btn.draggable = true;
-    colorGridEl.appendChild(btn);
-  });
+// ============ GAME LOGIC ============
+function handleTileClick(r, c) {
+  if (game.gameOver || !game.gameStarted) return;
+  if (!game.humanPlayer) return;
+  
+  const player = game.players[game.humanPlayer];
+  
+  // Can't click on kings
+  if (isKingTile(r, c)) return;
+  
+  // Can't click on same tile
+  if (player.row === r && player.col === c) return;
+  
+  // Find path to target (max 3 steps)
+  const path = findPath(player.row, player.col, r, c);
+  
+  if (path && path.length > 0 && path.length <= 3) {
+    player.targetPath = path;
+    render();
+  }
 }
 
-function renderQuickEmoji() {
-  quickEmojiEl.innerHTML = '';
-  QUICK.forEach(e => {
-    const btn = document.createElement('div');
-    btn.className = 'emoji-btn'; btn.textContent = e;
-    btn.draggable = true; btn.dataset.emoji = e;
-    quickEmojiEl.appendChild(btn);
-  });
+function combat(attackerType, defenderType) {
+  const attacker = game.players[attackerType];
+  const defender = game.players[defenderType];
+  
+  let winner, loser;
+  
+  if (attacker.hp > defender.hp) {
+    winner = attacker;
+    loser = defender;
+  } else if (defender.hp > attacker.hp) {
+    winner = defender;
+    loser = attacker;
+  } else {
+    // Random winner if equal
+    if (Math.random() < 0.5) {
+      winner = attacker;
+      loser = defender;
+    } else {
+      winner = defender;
+      loser = attacker;
+    }
+  }
+  
+  const loserType = loser === game.players.duck ? 'duck' : 'frog';
+  
+  // Winner loses HP equal to loser's HP (min 1)
+  winner.hp = Math.max(1, winner.hp - loser.hp);
+  
+  // Loser drops totem if carrying
+  if (loser.hasTotem) {
+    const totemKey = loserType === 'duck' ? 'duck' : 'snake';
+    game.totems[totemKey].row = loser.row;
+    game.totems[totemKey].col = loser.col;
+    game.totems[totemKey].pickedBy = null;
+    loser.hasTotem = false;
+  }
+  
+  // Loser respawns
+  if (loserType === 'duck') {
+    loser.row = 0;
+    loser.col = 5;
+  } else {
+    loser.row = 14;
+    loser.col = 3;
+  }
+  loser.hp = 1;
+  loser.targetPath = []; // Clear path on death
 }
 
-function renderCats() {
-  catRowEl.innerHTML = '';
-  Object.keys(EMOJIS).forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-btn' + (cat === currentCat ? ' active' : '');
-    btn.textContent = cat; btn.dataset.cat = cat;
-    catRowEl.appendChild(btn);
-  });
+function spawnAlly(type) {
+  // Find empty tile near king
+  const kingZoneTiles = [];
+  
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingZone(r, c) === type && !isTileBlocked(r, c)) {
+        kingZoneTiles.push({ r, c });
+      }
+    }
+  }
+  
+  if (kingZoneTiles.length > 0) {
+    const pos = kingZoneTiles[Math.floor(Math.random() * kingZoneTiles.length)];
+    game.allies.push({ type, row: pos.r, col: pos.c });
+  }
 }
 
-function renderEmojis() {
-  emojiGridEl.innerHTML = '';
-  (EMOJIS[currentCat] || []).forEach(e => {
-    const btn = document.createElement('div');
-    btn.className = 'emoji-btn'; btn.textContent = e;
-    btn.draggable = true; btn.dataset.emoji = e;
-    emojiGridEl.appendChild(btn);
-  });
+function updateAllyPaths() {
+  game.allyPaths = {};
+  for (let i = 0; i < game.allies.length; i++) {
+    const ally = game.allies[i];
+    if (ally.row < 0) continue;
+    const player = game.players[ally.type];
+    const path = findPath(ally.row, ally.col, player.row, player.col);
+    if (path) {
+      game.allyPaths[i] = path;
+    }
+  }
 }
 
-function renderPaths() {
-  pathListEl.innerHTML = '';
-  if (paths.length === 0) {
-    pathListEl.innerHTML = '<div class="no-paths">Немає маршрутів</div>';
+function moveAllies() {
+  game.allyPaths = {}; // Clear paths
+  
+  for (let i = 0; i < game.allies.length; i++) {
+    const ally = game.allies[i];
+    const player = game.players[ally.type];
+    
+    // If reached player (adjacent), add HP
+    if (distance(ally.row, ally.col, player.row, player.col) <= 1) {
+      player.hp++;
+      ally.row = -100; // Mark for removal
+      continue;
+    }
+    
+    // Use BFS to find optimal path
+    const path = findPath(ally.row, ally.col, player.row, player.col);
+    if (path && path.length > 0) {
+      // Store path for visualization
+      game.allyPaths[i] = path;
+      // Move to next step
+      ally.row = path[0].row;
+      ally.col = path[0].col;
+    }
+  }
+  
+  // Remove absorbed allies
+  game.allies = game.allies.filter(a => a.row >= 0);
+}
+
+// BFS pathfinding - returns full path to target
+function findPath(fromR, fromC, toR, toC) {
+  const visited = new Set();
+  const queue = [{ r: fromR, c: fromC, path: [] }];
+  visited.add(`${fromR},${fromC}`);
+  
+  const directions = [
+    { dr: -1, dc: 0 },  // up
+    { dr: 1, dc: 0 },   // down
+    { dr: 0, dc: -1 },  // left
+    { dr: 0, dc: 1 }    // right
+  ];
+  
+  while (queue.length > 0) {
+    const current = queue.shift();
+    
+    // Found target (or adjacent to it)
+    if (distance(current.r, current.c, toR, toC) <= 1) {
+      return current.path;
+    }
+    
+    for (const dir of directions) {
+      const nr = current.r + dir.dr;
+      const nc = current.c + dir.dc;
+      const key = `${nr},${nc}`;
+      
+      if (visited.has(key)) continue;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+      if (isKingTile(nr, nc)) continue;
+      if (findObstacle(nr, nc)) continue;
+      // Can't walk through players (except target)
+      const playerOnTile = findPlayer(nr, nc);
+      if (playerOnTile && !(nr === toR && nc === toC)) continue;
+      
+      visited.add(key);
+      const newPath = [...current.path, { row: nr, col: nc }];
+      queue.push({ r: nr, c: nc, path: newPath });
+    }
+  }
+  
+  return null; // No path found
+}
+
+// Get next step only (for compatibility)
+function findNextStep(fromR, fromC, toR, toC) {
+  const path = findPath(fromR, fromC, toR, toC);
+  return path && path.length > 0 ? path[0] : null;
+}
+
+function gameWin(playerType) {
+  game.gameOver = true;
+  if (game.tickTimer) clearInterval(game.tickTimer);
+  
+  const emoji = playerType === 'duck' ? '🐤' : '🐸';
+  const name = playerType === 'duck' ? 'Каченя' : 'Жабка';
+  const isHuman = playerType === game.humanPlayer;
+  
+  if (isHuman) {
+    document.getElementById('winnerText').textContent = `🏆 ${emoji} Перемога!`;
+    document.getElementById('winnerDesc').textContent = `Ти переміг! ${name} доставив тотем королю!`;
+  } else {
+    document.getElementById('winnerText').textContent = `😢 ${emoji} Програш`;
+    document.getElementById('winnerDesc').textContent = `AI переміг. ${name} доставив тотем королю.`;
+  }
+  document.getElementById('winModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('winModal').classList.remove('show');
+}
+
+function resetGame() {
+  closeModal();
+  if (game.tickTimer) clearInterval(game.tickTimer);
+  
+  // Reset AI indicator
+  document.querySelectorAll('.player-info').forEach(el => el.classList.remove('ai'));
+  
+  // Show character selection
+  document.getElementById('selectModal').classList.add('show');
+  
+  initGame();
+}
+
+// ============ START ============
+function selectCharacter(character) {
+  game.humanPlayer = character;
+  game.aiPlayer = character === 'duck' ? 'frog' : 'duck';
+  game.gameStarted = true;
+  
+  // Update HUD to show AI indicator
+  document.querySelector(`.player-info.${game.aiPlayer}`).classList.add('ai');
+  
+  // Close selection modal
+  document.getElementById('selectModal').classList.remove('show');
+  
+  // Start the game tick
+  startGameTick();
+  
+  render();
+  updateHUD();
+}
+
+function startGameTick() {
+  if (game.tickTimer) clearInterval(game.tickTimer);
+  game.tickTimer = setInterval(() => {
+    if (!game.gameOver && game.gameStarted) {
+      gameTick();
+    }
+  }, TICK_MS);
+}
+
+function gameTick() {
+  game.tick++;
+  
+  // Spawn allies every 4 ticks
+  if (game.tick % ALLY_SPAWN_TICKS === 0) {
+    spawnAlly('duck');
+    spawnAlly('frog');
+  }
+  
+  // Move allies
+  moveAllies();
+  
+  // Move human player one step if has path
+  if (game.humanPlayer) {
+    movePlayerOneStep(game.humanPlayer);
+  }
+  
+  // AI makes one step
+  aiMove();
+  
+  render();
+  updateHUD();
+}
+
+// Move player one step along their path
+function movePlayerOneStep(playerType) {
+  const player = game.players[playerType];
+  
+  if (!player.targetPath || player.targetPath.length === 0) return;
+  
+  const nextStep = player.targetPath[0];
+  
+  // Check what's on next step
+  const obstacle = findObstacle(nextStep.row, nextStep.col);
+  const enemyType = findPlayer(nextStep.row, nextStep.col);
+  const ally = findAlly(nextStep.row, nextStep.col);
+  
+  // Attack enemy player
+  if (enemyType && enemyType !== playerType) {
+    combat(playerType, enemyType);
+    player.targetPath = []; // Clear path after combat
     return;
   }
-  paths.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'path-item'; div.dataset.pathIdx = i;
-    div.innerHTML = `<span class="path-emoji">${p.emoji}</span>
-      <span class="path-info">${p.tiles.length} точок</span>
-      <button class="path-del" data-del="${i}">×</button>`;
-    pathListEl.appendChild(div);
-  });
-}
-
-function clearPathHighlights() {
-  tiles.forEach(t => t && t.classList.remove('path-point'));
-}
-
-function setupEvents() {
-  colorGridEl.onclick = e => {
-    const btn = e.target.closest('.color-btn');
-    if (btn) { selectedColor = btn.dataset.c; renderColors(); }
-  };
-  catRowEl.onclick = e => {
-    const btn = e.target.closest('.cat-btn');
-    if (btn) { currentCat = btn.dataset.cat; renderCats(); renderEmojis(); }
-  };
-  pathListEl.onclick = e => {
-    const del = e.target.closest('.path-del');
-    if (del) { paths.splice(parseInt(del.dataset.del), 1); renderPaths(); }
-  };
-
-  document.addEventListener('dragstart', e => {
-    const t = e.target;
-    if (t.classList.contains('color-btn')) dragData = { type: 'color', value: t.dataset.c };
-    else if (t.dataset.emoji) dragData = { type: 'emoji', value: t.dataset.emoji };
-    else if (t.classList.contains('tile') && !t.classList.contains('king') && t.textContent) {
-      dragData = { type: 'tile', value: t.textContent, from: parseInt(t.dataset.idx) };
-      t.classList.add('dragging');
-    }
-    if (dragData) e.dataTransfer.setData('text', '');
-  });
-  document.addEventListener('dragend', () => {
-    dragData = null;
-    document.querySelectorAll('.dragging,.drag-over').forEach(el => el.classList.remove('dragging','drag-over'));
-  });
-  document.addEventListener('dragover', e => {
-    if (!dragData) return;
-    const tile = e.target.closest('.tile:not(.king)');
-    if (tile) { e.preventDefault(); tile.classList.add('drag-over'); }
-  });
-  document.addEventListener('dragleave', e => {
-    const tile = e.target.closest('.tile');
-    if (tile) tile.classList.remove('drag-over');
-  });
-  document.addEventListener('drop', e => {
-    if (!dragData) return;
-    e.preventDefault();
-    const tile = e.target.closest('.tile:not(.king)');
-    if (tile) {
-      const i = parseInt(tile.dataset.idx);
-      if (dragData.type === 'color') board[i].color = dragData.value;
-      else if (dragData.type === 'emoji') board[i].emoji = dragData.value;
-      else if (dragData.type === 'tile' && dragData.from !== i) {
-        board[i].emoji = dragData.value;
-        board[dragData.from].emoji = '';
-        updateTile(dragData.from);
-      }
-      updateTile(i);
-    }
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    dragData = null;
-  });
-
-  boardEl.onclick = e => {
-    const tile = e.target.closest('.tile:not(.king)');
-    if (!tile) return;
-    const i = parseInt(tile.dataset.idx);
-    if (isRecording) {
-      if (!recordingEmoji && board[i].emoji) {
-        recordingEmoji = board[i].emoji;
-        recordingPath = [i];
-        tile.classList.add('path-point');
-      } else if (recordingEmoji && !recordingPath.includes(i)) {
-        recordingPath.push(i);
-        tile.classList.add('path-point');
-      }
+  
+  // Attack enemy ally
+  if (ally && ally.type !== playerType) {
+    if (player.hp > 1) {
+      player.hp--;
+      game.allies = game.allies.filter(a => a !== ally);
+      // Don't remove from path - will try again next tick or move
     } else {
-      board[i].color = selectedColor;
-      updateTile(i);
+      player.targetPath = []; // Can't proceed
     }
-  };
-  boardEl.ondblclick = e => {
-    if (isRecording) return;
-    const tile = e.target.closest('.tile:not(.king)');
-    if (!tile) return;
-    board[parseInt(tile.dataset.idx)].emoji = '';
-    updateTile(parseInt(tile.dataset.idx));
-  };
-  boardEl.oncontextmenu = e => {
-    const tile = e.target.closest('.tile:not(.king)');
-    if (!tile) return;
-    e.preventDefault();
-    const i = parseInt(tile.dataset.idx);
-    board[i].emoji = ''; board[i].color = 'none';
-    updateTile(i);
-  };
-
-  speedSlider.oninput = () => {
-    tickSpeed = parseFloat(speedSlider.value);
-    speedVal.textContent = tickSpeed + '×';
-    if (isPlaying) restartTicker();
-  };
-
-  recordBtn.onclick = toggleRecord;
-  playBtn.onclick = togglePlay;
-  $('clearPathsBtn').onclick = clearPaths;
-  $('saveBtn').onclick = saveAll;
-  $('loadBtn').onclick = loadAll;
-  $('resetBtn').onclick = resetBoard;
-}
-
-function toggleRecord() {
-  if (isRecording) {
-    isRecording = false;
-    recordBtn.classList.remove('recording');
-    recordBtn.textContent = '🔴 Записати';
-    boardWrap.classList.remove('recording');
-    if (recordingPath.length >= 2 && recordingEmoji) {
-      paths.push({ emoji: recordingEmoji, tiles: [...recordingPath], step: 0 });
-      renderPaths();
+    return;
+  }
+  
+  // Break obstacle
+  if (obstacle) {
+    if (player.hp > 1) {
+      player.hp--;
+      game.obstacles = game.obstacles.filter(o => o !== obstacle);
+      // Don't remove from path - next tick can move through
+    } else {
+      player.targetPath = []; // Can't proceed
     }
-    clearPathHighlights();
-    recordingPath = []; recordingEmoji = '';
+    return;
+  }
+  
+  // Check if tile is blocked by something else
+  if (isTileBlocked(nextStep.row, nextStep.col)) {
+    player.targetPath = []; // Path blocked
+    return;
+  }
+  
+  // Move player
+  player.row = nextStep.row;
+  player.col = nextStep.col;
+  player.targetPath.shift(); // Remove completed step
+  
+  // Pick up totem
+  const totemKey = findTotem(player.row, player.col);
+  if (totemKey) {
+    const totem = game.totems[totemKey];
+    if (totem.owner === playerType && !totem.pickedBy) {
+      totem.pickedBy = playerType;
+      player.hasTotem = true;
+      totem.row = -1;
+      totem.col = -1;
+    }
+  }
+  
+  // Check win condition
+  if (player.hasTotem) {
+    const zone = isKingZone(player.row, player.col);
+    if (zone === playerType) {
+      gameWin(playerType);
+    }
+  }
+}
+
+// ============ AI LOGIC ============
+function aiMove() {
+  if (!game.aiPlayer || game.gameOver) return;
+  
+  const ai = game.players[game.aiPlayer];
+  const human = game.players[game.humanPlayer];
+  
+  // Determine AI goal
+  let targetR, targetC;
+  
+  if (ai.hasTotem) {
+    // Has totem - go to king zone
+    const kingZone = findNearestKingZone(game.aiPlayer, ai.row, ai.col);
+    if (kingZone) {
+      targetR = kingZone.row;
+      targetC = kingZone.col;
+    }
   } else {
-    if (isPlaying) togglePlay();
-    isRecording = true; recordingPath = []; recordingEmoji = '';
-    recordBtn.classList.add('recording');
-    recordBtn.textContent = '⏹️ Стоп';
-    boardWrap.classList.add('recording');
+    // Need totem - go get it
+    const totemKey = game.aiPlayer === 'duck' ? 'duck' : 'snake';
+    const totem = game.totems[totemKey];
+    if (totem.pickedBy === null) {
+      targetR = totem.row;
+      targetC = totem.col;
+    }
+  }
+  
+  if (targetR === undefined) return;
+  
+  // Find path to target
+  const path = findPathForAI(ai.row, ai.col, targetR, targetC);
+  
+  if (path && path.length > 0) {
+    const nextStep = path[0];
+    
+    // Check what's on next step
+    const obstacle = findObstacle(nextStep.row, nextStep.col);
+    const enemyOnTile = findPlayer(nextStep.row, nextStep.col);
+    const enemyAlly = findAlly(nextStep.row, nextStep.col);
+    
+    // Attack enemy player if in the way and we have advantage
+    if (enemyOnTile && enemyOnTile !== game.aiPlayer) {
+      if (ai.hp >= human.hp) {
+        combat(game.aiPlayer, game.humanPlayer);
+        return;
+      }
+    }
+    
+    // Kill enemy ally if in the way
+    if (enemyAlly && enemyAlly.type !== game.aiPlayer) {
+      if (ai.hp > 1) {
+        ai.hp--;
+        game.allies = game.allies.filter(a => a !== enemyAlly);
+        return;
+      }
+    }
+    
+    // Break obstacle if in the way
+    if (obstacle) {
+      if (ai.hp > 1) {
+        ai.hp--;
+        game.obstacles = game.obstacles.filter(o => o !== obstacle);
+        return;
+      } else {
+        // Can't break, try to find alternative path
+        return;
+      }
+    }
+    
+    // Move
+    if (!isTileBlocked(nextStep.row, nextStep.col)) {
+      ai.row = nextStep.row;
+      ai.col = nextStep.col;
+      
+      // Pick up totem
+      const totemKey = findTotem(ai.row, ai.col);
+      if (totemKey) {
+        const totem = game.totems[totemKey];
+        if (totem.owner === game.aiPlayer && !totem.pickedBy) {
+          totem.pickedBy = game.aiPlayer;
+          ai.hasTotem = true;
+          totem.row = -1;
+          totem.col = -1;
+        }
+      }
+      
+      // Check win
+      if (ai.hasTotem) {
+        const zone = isKingZone(ai.row, ai.col);
+        if (zone === game.aiPlayer) {
+          gameWin(game.aiPlayer);
+        }
+      }
+    }
   }
 }
 
-function togglePlay() {
-  if (isPlaying) {
-    stopTicker(); isPlaying = false;
-    playBtn.textContent = '▶️ Старт';
-    playBtn.classList.remove('active');
-  } else {
-    if (paths.length === 0) return alert('Спочатку створіть маршрути!');
-    if (isRecording) toggleRecord();
-    isPlaying = true;
-    playBtn.textContent = '⏸️ Пауза';
-    playBtn.classList.add('active');
-    startTicker();
+function findNearestKingZone(playerType, fromR, fromC) {
+  let nearest = null;
+  let minDist = Infinity;
+  
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingZone(r, c) === playerType && !isTileBlocked(r, c)) {
+        const d = distance(fromR, fromC, r, c);
+        if (d < minDist) {
+          minDist = d;
+          nearest = { row: r, col: c };
+        }
+      }
+    }
   }
+  
+  return nearest;
 }
 
-function startTicker() { stopTicker(); tickTimer = setInterval(tick, 1000 / tickSpeed); }
-function stopTicker() { if (tickTimer) { clearInterval(tickTimer); tickTimer = null; } }
-function restartTicker() { if (isPlaying) startTicker(); }
-
-function tick() {
-  paths.forEach(p => {
-    if (p.tiles.length < 2) return;
-    const from = p.tiles[p.step];
-    const next = (p.step + 1) % p.tiles.length;
-    const to = p.tiles[next];
-    board[from].emoji = ''; board[to].emoji = p.emoji;
-    updateTile(from); updateTile(to);
-    p.step = next;
-  });
-}
-
-function clearPaths() {
-  if (isPlaying) togglePlay();
-  paths = []; renderPaths();
-}
-
-function saveAll() {
-  localStorage.setItem('tile-v5', JSON.stringify({ board, paths }));
-  alert('💾 Збережено!');
-}
-
-function loadAll() {
-  try {
-    const d = JSON.parse(localStorage.getItem('tile-v5'));
-    if (d) {
-      if (isPlaying) togglePlay();
-      board = d.board || board; paths = d.paths || [];
-      renderBoard(); renderPaths();
-      alert('📂 Завантажено!');
-    } else alert('Немає даних');
-  } catch(e) { alert('Помилка'); }
-}
-
-function resetBoard() {
-  if (confirm('Скинути все?')) {
-    if (isPlaying) togglePlay();
-    if (isRecording) toggleRecord();
-    paths = []; init();
+function findPathForAI(fromR, fromC, toR, toC) {
+  const visited = new Set();
+  const queue = [{ r: fromR, c: fromC, path: [] }];
+  visited.add(`${fromR},${fromC}`);
+  
+  const directions = [
+    { dr: -1, dc: 0 },
+    { dr: 1, dc: 0 },
+    { dr: 0, dc: -1 },
+    { dr: 0, dc: 1 }
+  ];
+  
+  while (queue.length > 0) {
+    const current = queue.shift();
+    
+    if (current.r === toR && current.c === toC) {
+      return current.path;
+    }
+    
+    for (const dir of directions) {
+      const nr = current.r + dir.dr;
+      const nc = current.c + dir.dc;
+      const key = `${nr},${nc}`;
+      
+      if (visited.has(key)) continue;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+      if (isKingTile(nr, nc)) continue;
+      
+      visited.add(key);
+      const newPath = [...current.path, { row: nr, col: nc }];
+      queue.push({ r: nr, c: nc, path: newPath });
+    }
   }
+  
+  return null;
 }
 
-init();
-window.onbeforeunload = () => stopTicker();
-document.onvisibilitychange = () => { if (document.hidden && isPlaying) togglePlay(); };
+initGame();
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (game.tickTimer) clearInterval(game.tickTimer);
+});
 </script>
 </body>
 </html>
