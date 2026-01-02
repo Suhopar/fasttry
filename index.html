@@ -78,10 +78,12 @@
       aspect-ratio: 9 / 15;
       padding: 8px;
       border-radius: 16px;
-      background: var(--bg);
-      box-shadow: 
+      background: transparent;
+      box-shadow:
         8px 8px 16px var(--shadow-d),
         -8px -8px 16px var(--shadow-l);
+      position: relative;
+      z-index: 1;
     }
 
     /* Tiles */
@@ -110,6 +112,88 @@
     /* Divider diagonal - tiles on the diagonal line */
     .tile.divider {
       border: 2px solid rgba(120, 130, 150, 0.5);
+    }
+
+    /* Water background - under tiles */
+    .water-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg,
+          rgba(200, 230, 255, 0.6) 0%,
+          rgba(100, 170, 220, 0.5) 50%,
+          rgba(40, 100, 160, 0.55) 100%
+        );
+      background-size: 300% 300%;
+      animation: water-shimmer 40s ease-in-out infinite;
+      z-index: 0;
+    }
+    .water-overlay::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 30% at 40% 80%, rgba(255, 255, 255, 0.22) 0%, transparent 50%);
+      animation: water-highlights 60s ease-in-out infinite;
+      border-radius: 16px;
+    }
+    .water-overlay::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.1) 45%,
+        rgba(255, 255, 255, 0.18) 50%,
+        rgba(255, 255, 255, 0.1) 55%,
+        transparent 60%
+      );
+      background-size: 300% 300%;
+      animation: water-wave 30s linear infinite;
+      border-radius: 16px;
+    }
+    @keyframes water-shimmer {
+      0% {
+        background-position: 0% 0%;
+      }
+      50% {
+        background-position: 100% 100%;
+      }
+      100% {
+        background-position: 0% 0%;
+      }
+    }
+    @keyframes water-highlights {
+      0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.02);
+      }
+    }
+    @keyframes water-wave {
+      0% {
+        background-position: 200% 200%;
+      }
+      100% {
+        background-position: -100% -100%;
+      }
     }
 
     /* King zones */
@@ -220,6 +304,33 @@
     }
     .tile.ally.breaking {
       animation: obstacle-break 0.3s ease-out;
+    }
+
+    /* Animated ally sprites */
+    .ally-sprite {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      background: var(--bg);
+      z-index: 15;
+      pointer-events: none;
+      transition: left 0.3s ease-out, top 0.3s ease-out, opacity 0.2s;
+      font-size: 0.7rem;
+      box-shadow:
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l);
+    }
+    .ally-sprite.duck-ally {
+      border: 1px solid var(--duck-color);
+    }
+    .ally-sprite.frog-ally {
+      border: 1px solid var(--frog-color);
+    }
+    .ally-sprite.dying {
+      opacity: 0;
+      transform: scale(0.5);
     }
     
     /* Path visualization for allies */
@@ -602,41 +713,75 @@
     .game-bottom {
       width: 100%;
       max-width: 320px;
+      padding-bottom: 10px;
     }
-    .game-info {
+    .game-panel {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      padding: 10px;
+      gap: 20px;
+      padding: 12px 20px;
       background: var(--bg);
-      border-radius: 12px;
+      border-radius: 20px;
+      box-shadow:
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
+    }
+    .panel-btn {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-shadow:
         4px 4px 8px var(--shadow-d),
         -4px -4px 8px var(--shadow-l);
+      transition: all 0.15s;
     }
-    .game-info-left {
-      font-size: 0.85rem;
-      color: #666;
-    }
-    .game-info-right {
-      display: flex;
-      gap: 8px;
-    }
-    .game-btn-small {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      background: var(--bg);
+    .panel-btn:active {
       box-shadow:
-        2px 2px 4px var(--shadow-d),
-        -2px -2px 4px var(--shadow-l);
+        inset 3px 3px 6px var(--shadow-d),
+        inset -3px -3px 6px var(--shadow-l);
     }
-    .game-btn-small:active {
-      box-shadow:
-        inset 2px 2px 4px var(--shadow-d),
-        inset -2px -2px 4px var(--shadow-l);
+
+    /* Circular tick progress */
+    .tick-ring-container {
+      position: relative;
+      width: 50px;
+      height: 50px;
+    }
+    .tick-ring {
+      width: 50px;
+      height: 50px;
+      transform: rotate(-90deg);
+    }
+    .tick-ring-bg {
+      fill: none;
+      stroke: var(--shadow-d);
+      stroke-width: 3;
+    }
+    .tick-ring-progress {
+      fill: none;
+      stroke: url(#tickGradient);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 97.39; /* 2 * PI * 15.5 */
+      stroke-dashoffset: 97.39;
+      transition: stroke-dashoffset 0.05s linear;
+    }
+    .tick-number {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #555;
     }
 
     /* Character Select Modal - оновлений */
@@ -645,28 +790,19 @@
       margin-bottom: 20px;
     }
 
-    /* Tick Progress Bar */
-    .tick-progress-container {
-      width: 100%;
-      height: 6px;
-      background: var(--shadow-d);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    .tick-progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      border-radius: 3px;
-      transition: width 0.05s linear;
-    }
-    .tick-progress-bar.reset {
-      transition: none;
-    }
   </style>
 </head>
 <body>
+
+<!-- SVG Gradient Definition -->
+<svg width="0" height="0">
+  <defs>
+    <linearGradient id="tickGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+  </defs>
+</svg>
 
 <!-- ============ MAIN MENU SCREEN ============ -->
 <div class="screen active" id="menuScreen">
@@ -761,29 +897,25 @@
 <div class="screen" id="gameScreen">
   <div class="game-top">
     <div class="board-container">
+      <div class="water-overlay"></div>
       <div class="board" id="board"></div>
+      <div id="allySpritesContainer"></div>
       <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
       <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
     </div>
   </div>
 
   <div class="game-bottom">
-    <div class="game-info">
-      <div class="game-info-left">
-        <span>🐤 <span id="duckHp">❤️1</span></span>
-        <span id="duckTotem"></span>
-        <span style="margin: 0 8px;">|</span>
-        <span>🐸 <span id="frogHp">❤️1</span></span>
-        <span id="frogTotem"></span>
+    <div class="game-panel">
+      <button class="panel-btn" onclick="pauseGame()">⏸️</button>
+      <div class="tick-ring-container">
+        <svg class="tick-ring" viewBox="0 0 36 36">
+          <circle class="tick-ring-bg" cx="18" cy="18" r="15.5"></circle>
+          <circle class="tick-ring-progress" id="tickRing" cx="18" cy="18" r="15.5"></circle>
+        </svg>
+        <span class="tick-number" id="tickNumber">0</span>
       </div>
-      <div class="game-info-right">
-        <span id="turnInfo">Тік: 0</span>
-        <button class="game-btn-small" onclick="pauseGame()">⏸️</button>
-        <button class="game-btn-small" onclick="goToMenu()">🏠</button>
-      </div>
-    </div>
-    <div class="tick-progress-container">
-      <div class="tick-progress-bar" id="tickProgress"></div>
+      <button class="panel-btn" onclick="goToMenu()">🏠</button>
     </div>
   </div>
 </div>
@@ -814,7 +946,7 @@
 const COLS = 9, ROWS = 15;
 const TICK_MS = 1000; // 1 second per tick
 const ALLY_SPAWN_TICKS = 6; // 6 sec / 1 sec = 6 ticks
-const OBSTACLE_DENSITY = 0.3; // 30% chance per valid tile
+const OBSTACLE_DENSITY = 0.45; // 45% chance per valid tile (more obstacles)
 
 // Diagonal divider from (col 0, row 3) to (col 8, row 11) in 0-indexed
 // In 1-indexed: (1, 4) to (9, 12)
@@ -940,31 +1072,96 @@ function initGame() {
   // Clear allies
   game.allies = [];
   game.allyPaths = {};
-  
-  // Generate obstacles
+
+  // Clear ally sprites
+  const allyContainer = document.getElementById('allySpritesContainer');
+  if (allyContainer) allyContainer.innerHTML = '';
+
+  // Generate obstacles - symmetric for both sides
   game.obstacles = [];
+
+  // Helper: check if tile is near a totem (within 2 tiles)
+  const isNearSnakeTotem = (r, c) => distance(r, c, 0, 0) <= 2;
+  const isNearDuckTotem = (r, c) => distance(r, c, 14, 8) <= 2;
+
+  // Collect valid tiles - separate near-totem and far tiles
+  const duckTilesNearTotem = []; // Near snake totem (duck territory, row 0 area)
+  const duckTilesFar = [];
+  const frogTilesNearTotem = []; // Near duck totem (frog territory, row 14 area)
+  const frogTilesFar = [];
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (isKingTile(r, c)) continue;
       if (isKingZone(r, c)) continue;
-      if (isDivider(r, c)) continue; // Skip divider tiles
-      
+      if (isDivider(r, c)) continue;
+
       // Don't place on player start positions
       if (r === 0 && c === 5) continue; // duck start
       if (r === 14 && c === 3) continue; // frog start
-      
+
       // Don't place on totem positions
       if (r === 0 && c === 0) continue; // snake totem
       if (r === 14 && c === 8) continue; // duck totem
-      
-      if (Math.random() < OBSTACLE_DENSITY) {
-        const territory = getTerritory(r, c);
-        if (territory === 'duck') {
-          game.obstacles.push({ row: r, col: c, type: 'wave' });
-        } else if (territory === 'frog') {
-          game.obstacles.push({ row: r, col: c, type: 'bush' });
+
+      const territory = getTerritory(r, c);
+      if (territory === 'duck') {
+        if (isNearSnakeTotem(r, c)) {
+          duckTilesNearTotem.push({ row: r, col: c });
+        } else {
+          duckTilesFar.push({ row: r, col: c });
+        }
+      } else if (territory === 'frog') {
+        if (isNearDuckTotem(r, c)) {
+          frogTilesNearTotem.push({ row: r, col: c });
+        } else {
+          frogTilesFar.push({ row: r, col: c });
         }
       }
+    }
+  }
+
+  // Shuffle arrays
+  const shuffle = arr => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  shuffle(duckTilesNearTotem);
+  shuffle(duckTilesFar);
+  shuffle(frogTilesNearTotem);
+  shuffle(frogTilesFar);
+
+  // Place equal obstacles near totems (both sides get same amount)
+  const nearTotemCount = Math.min(
+    Math.floor(duckTilesNearTotem.length * OBSTACLE_DENSITY),
+    Math.floor(frogTilesNearTotem.length * OBSTACLE_DENSITY)
+  );
+
+  for (let i = 0; i < nearTotemCount; i++) {
+    if (duckTilesNearTotem[i]) {
+      game.obstacles.push({ row: duckTilesNearTotem[i].row, col: duckTilesNearTotem[i].col, type: 'wave' });
+    }
+    if (frogTilesNearTotem[i]) {
+      game.obstacles.push({ row: frogTilesNearTotem[i].row, col: frogTilesNearTotem[i].col, type: 'bush' });
+    }
+  }
+
+  // Place equal obstacles in far areas
+  const farCount = Math.min(
+    Math.floor(duckTilesFar.length * OBSTACLE_DENSITY),
+    Math.floor(frogTilesFar.length * OBSTACLE_DENSITY)
+  );
+
+  for (let i = 0; i < farCount; i++) {
+    if (duckTilesFar[i]) {
+      game.obstacles.push({ row: duckTilesFar[i].row, col: duckTilesFar[i].col, type: 'wave' });
+    }
+    if (frogTilesFar[i]) {
+      game.obstacles.push({ row: frogTilesFar[i].row, col: frogTilesFar[i].col, type: 'bush' });
     }
   }
   
@@ -1055,13 +1252,13 @@ function render() {
         extraClass = 'totem';
       }
       
-      // Allies
+      // Allies - don't render in tiles, use sprites instead
+      // Just mark the tile
       const ally = findAlly(r, c);
       if (ally) {
-        content = ally.type === 'duck' ? EMOJI.duckAlly : EMOJI.frogAlly;
         extraClass = 'ally';
       }
-      
+
       // Players - don't render in tiles, use sprites instead
       // Just mark the tile
       const playerType = findPlayer(r, c);
@@ -1081,6 +1278,65 @@ function render() {
   
   // Update player sprite positions
   updatePlayerSprites();
+  // Update ally sprite positions
+  updateAllySprites();
+}
+
+// Update animated ally sprites
+function updateAllySprites() {
+  const boardEl = document.getElementById('board');
+  const boardRect = boardEl.getBoundingClientRect();
+  const container = document.getElementById('allySpritesContainer');
+  const padding = 8;
+  const gap = 3;
+
+  const cellWidth = (boardRect.width - padding * 2 - gap * 8) / 9;
+  const cellHeight = (boardRect.height - padding * 2 - gap * 14) / 15;
+
+  // Get current sprites
+  const existingSprites = container.querySelectorAll('.ally-sprite');
+  const existingMap = new Map();
+  existingSprites.forEach(sprite => {
+    existingMap.set(sprite.dataset.allyId, sprite);
+  });
+
+  // Track which allies still exist
+  const currentAllyIds = new Set();
+
+  game.allies.forEach((ally, index) => {
+    if (ally.row < 0) return; // Skip removed allies
+
+    const allyId = ally.id || (ally.id = 'ally_' + Date.now() + '_' + index + '_' + Math.random());
+    currentAllyIds.add(allyId);
+
+    let sprite = existingMap.get(allyId);
+
+    if (!sprite) {
+      // Create new sprite
+      sprite = document.createElement('div');
+      sprite.className = `ally-sprite ${ally.type}-ally`;
+      sprite.dataset.allyId = allyId;
+      sprite.textContent = ally.type === 'duck' ? EMOJI.duckAlly : EMOJI.frogAlly;
+      sprite.style.width = (cellWidth * 0.85) + 'px';
+      sprite.style.height = (cellHeight * 0.85) + 'px';
+      sprite.style.fontSize = (cellHeight * 0.5) + 'px';
+      container.appendChild(sprite);
+    }
+
+    // Update position (with animation via CSS transition)
+    const offsetX = (cellWidth - cellWidth * 0.85) / 2;
+    const offsetY = (cellHeight - cellHeight * 0.85) / 2;
+    sprite.style.left = (padding + ally.col * (cellWidth + gap) + offsetX) + 'px';
+    sprite.style.top = (padding + ally.row * (cellHeight + gap) + offsetY) + 'px';
+  });
+
+  // Remove sprites for dead allies with fade out
+  existingSprites.forEach(sprite => {
+    if (!currentAllyIds.has(sprite.dataset.allyId)) {
+      sprite.classList.add('dying');
+      setTimeout(() => sprite.remove(), 200);
+    }
+  });
 }
 
 // Update animated player sprites
@@ -1141,22 +1397,11 @@ function updatePlayerSprites() {
 }
 
 function updateHUD() {
-  // Update all HP displays (in game HUD)
-  document.querySelectorAll('#duckHp').forEach(el => {
-    el.textContent = `❤️ ${game.players.duck.hp}`;
-  });
-  document.querySelectorAll('#frogHp').forEach(el => {
-    el.textContent = `❤️ ${game.players.frog.hp}`;
-  });
-  document.querySelectorAll('#duckTotem').forEach(el => {
-    el.textContent = game.players.duck.hasTotem ? '🦆' : '';
-  });
-  document.querySelectorAll('#frogTotem').forEach(el => {
-    el.textContent = game.players.frog.hasTotem ? '🐍' : '';
-  });
-
-  // Update turn info - simplified for game screen
-  document.getElementById('turnInfo').textContent = `Тік: ${game.tick}`;
+  // Update tick number in ring
+  const tickNumber = document.getElementById('tickNumber');
+  if (tickNumber) {
+    tickNumber.textContent = game.tick;
+  }
 }
 
 // ============ GAME LOGIC ============
@@ -1181,7 +1426,25 @@ function handleTileClick(r, c) {
     if (path && path.length > 0 && path.length <= 2) {
       // Встановлюємо шлях - можна завжди змінити натиснувши на інше місце
       player.targetPath = path;
-      render();
+      // Оновлюємо тільки візуалізацію шляху, не перебудовуємо весь DOM
+      updatePathVisualization();
+    }
+  }
+}
+
+// Оновлює візуалізацію шляху без повної перебудови DOM
+function updatePathVisualization() {
+  // Очистити попередні шляхи
+  document.querySelectorAll('.tile.player-path').forEach(t => t.classList.remove('player-path'));
+
+  // Показати новий шлях
+  if (game.humanPlayer) {
+    const humanPath = game.players[game.humanPlayer].targetPath;
+    if (humanPath) {
+      humanPath.forEach(p => {
+        const tile = document.querySelector(`.tile[data-row="${p.row}"][data-col="${p.col}"]`);
+        if (tile) tile.classList.add('player-path');
+      });
     }
   }
 }
@@ -1468,10 +1731,11 @@ function startGameTick() {
   if (game.tickTimer) clearInterval(game.tickTimer);
   if (game.tickProgressTimer) cancelAnimationFrame(game.tickProgressTimer);
 
-  // Reset progress bar
-  const progressBar = document.getElementById('tickProgress');
-  progressBar.classList.add('reset');
-  progressBar.style.width = '0%';
+  const RING_CIRCUMFERENCE = 97.39; // 2 * PI * 15.5
+  const tickRing = document.getElementById('tickRing');
+
+  // Reset ring progress
+  tickRing.style.strokeDashoffset = RING_CIRCUMFERENCE;
 
   // Start tick timer
   game.tickStartTime = performance.now();
@@ -1481,11 +1745,11 @@ function startGameTick() {
       gameTick();
       // Reset progress after tick
       game.tickStartTime = performance.now();
-      progressBar.classList.add('reset');
-      progressBar.style.width = '0%';
-      // Remove reset class after reflow
+      tickRing.style.transition = 'none';
+      tickRing.style.strokeDashoffset = RING_CIRCUMFERENCE;
+      // Re-enable transition after reflow
       requestAnimationFrame(() => {
-        progressBar.classList.remove('reset');
+        tickRing.style.transition = 'stroke-dashoffset 0.05s linear';
       });
     }
   }, TICK_MS);
@@ -1497,11 +1761,13 @@ function startGameTick() {
 function updateTickProgress() {
   if (game.gameOver || !game.gameStarted) return;
 
-  const progressBar = document.getElementById('tickProgress');
+  const RING_CIRCUMFERENCE = 97.39;
+  const tickRing = document.getElementById('tickRing');
   const elapsed = performance.now() - game.tickStartTime;
-  const progress = Math.min((elapsed / TICK_MS) * 100, 100);
+  const progress = Math.min(elapsed / TICK_MS, 1);
 
-  progressBar.style.width = progress + '%';
+  // Ring fills clockwise (offset decreases from full to 0)
+  tickRing.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
 
   game.tickProgressTimer = requestAnimationFrame(updateTickProgress);
 }
