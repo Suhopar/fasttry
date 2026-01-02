@@ -2250,36 +2250,28 @@ function vibrate(pattern) {
 loadSettings();
 initGame();
 
-// Event delegation for board clicks - handles clicks even during DOM rebuild
+// Event delegation for board clicks - завжди використовуємо координати для надійності
 document.getElementById('board').addEventListener('click', (e) => {
-  let tile = e.target.closest('.tile');
+  const board = document.getElementById('board');
+  const boardRect = board.getBoundingClientRect();
+  const padding = 8; // board padding
 
-  // Якщо клікнули між плитками (на gap), знаходимо найближчу плитку по координатах
-  if (!tile || tile.dataset.row === undefined) {
-    const board = document.getElementById('board');
-    const boardRect = board.getBoundingClientRect();
-    const padding = 8; // board padding
+  // Розраховуємо позицію кліку відносно дошки
+  const x = e.clientX - boardRect.left - padding;
+  const y = e.clientY - boardRect.top - padding;
 
-    // Розраховуємо позицію кліку відносно дошки
-    const x = e.clientX - boardRect.left - padding;
-    const y = e.clientY - boardRect.top - padding;
+  // Розмір клітинки з gap
+  const cellWidth = (boardRect.width - padding * 2) / COLS;
+  const cellHeight = (boardRect.height - padding * 2) / ROWS;
 
-    // Розмір клітинки з gap
-    const cellWidth = (boardRect.width - padding * 2) / COLS;
-    const cellHeight = (boardRect.height - padding * 2) / ROWS;
+  // Визначаємо row і col
+  const col = Math.floor(x / cellWidth);
+  const row = Math.floor(y / cellHeight);
 
-    // Визначаємо row і col
-    const col = Math.floor(x / cellWidth);
-    const row = Math.floor(y / cellHeight);
-
-    // Перевіряємо межі
-    if (row >= 0 && row < ROWS && col >= 0 && col < COLS && !isKingTile(row, col)) {
-      handleTileClick(row, col);
-    }
-    return;
+  // Перевіряємо межі
+  if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+    handleTileClick(row, col);
   }
-
-  handleTileClick(parseInt(tile.dataset.row), parseInt(tile.dataset.col));
 });
 
 // Cleanup on page unload
