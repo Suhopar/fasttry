@@ -921,9 +921,31 @@ function handleTileClick(r, c) {
     }
   }
   
-  // For tiles further away, set path (can always change)
-  const path = findPath(player.row, player.col, r, c);
-  
+  // For tiles further away, set path (can always change destination)
+  // Спочатку пробуємо знайти шлях до цільової клітинки
+  let path = findPath(player.row, player.col, r, c);
+
+  // Якщо ціль заблокована (перешкода/ворог), шукаємо шлях до сусідньої клітинки
+  if (!path && (findObstacle(r, c) || findPlayer(r, c) || findAlly(r, c))) {
+    // Знаходимо найближчу вільну клітинку поруч з ціллю
+    const directions = [{dr: -1, dc: 0}, {dr: 1, dc: 0}, {dr: 0, dc: -1}, {dr: 0, dc: 1}];
+    let bestPath = null;
+    for (const dir of directions) {
+      const nr = r + dir.dr;
+      const nc = c + dir.dc;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+      if (isKingTile(nr, nc)) continue;
+      const testPath = findPath(player.row, player.col, nr, nc);
+      if (testPath && (!bestPath || testPath.length < bestPath.length)) {
+        bestPath = testPath;
+      }
+    }
+    if (bestPath) {
+      // Додаємо цільову клітинку в кінець шляху (для атаки/ламання)
+      path = [...bestPath, {row: r, col: c}];
+    }
+  }
+
   if (path && path.length > 0 && path.length <= 3) {
     player.targetPath = path;
     render();
@@ -1028,9 +1050,9 @@ function moveAllies() {
     // If path is blocked by obstacles, ally won't move
     const path = findPath(ally.row, ally.col, player.row, player.col, false);
     if (path && path.length > 0) {
-      // Check if next step is actually free (not blocked by other allies)
+      // Check if next step is actually free (not blocked by other allies or obstacles)
       const nextStep = path[0];
-      if (!findAlly(nextStep.row, nextStep.col)) {
+      if (!findAlly(nextStep.row, nextStep.col) && !findObstacle(nextStep.row, nextStep.col)) {
         // Store path for visualization
         game.allyPaths[i] = path;
         // Move to next step
