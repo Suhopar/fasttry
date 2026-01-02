@@ -864,7 +864,8 @@
 const COLS = 9, ROWS = 15;
 const TICK_MS = 1000; // 1 second per tick
 const ALLY_SPAWN_TICKS = 6; // 6 sec / 1 sec = 6 ticks
-const OBSTACLE_DENSITY = 0.45; // 45% chance per valid tile (more obstacles)
+const OBSTACLE_DENSITY = 0.70; // 70% chance per valid tile (more obstacles)
+const MIN_OBSTACLES_PER_ZONE = 8; // Мінімум перешкод на кожну зону
 
 // Diagonal divider from (col 0, row 3) to (col 8, row 11) in 0-indexed
 // In 1-indexed: (1, 4) to (9, 12)
@@ -1054,9 +1055,13 @@ function initGame() {
   shuffle(frogTilesFar);
 
   // Place equal obstacles near totems (both sides get same amount)
-  const nearTotemCount = Math.min(
-    Math.floor(duckTilesNearTotem.length * OBSTACLE_DENSITY),
-    Math.floor(frogTilesNearTotem.length * OBSTACLE_DENSITY)
+  // Використовуємо Math.max для гарантії мінімальної кількості
+  const nearTotemCount = Math.max(
+    MIN_OBSTACLES_PER_ZONE,
+    Math.min(
+      Math.floor(duckTilesNearTotem.length * OBSTACLE_DENSITY),
+      Math.floor(frogTilesNearTotem.length * OBSTACLE_DENSITY)
+    )
   );
 
   for (let i = 0; i < nearTotemCount; i++) {
@@ -1069,9 +1074,12 @@ function initGame() {
   }
 
   // Place equal obstacles in far areas
-  const farCount = Math.min(
-    Math.floor(duckTilesFar.length * OBSTACLE_DENSITY),
-    Math.floor(frogTilesFar.length * OBSTACLE_DENSITY)
+  const farCount = Math.max(
+    MIN_OBSTACLES_PER_ZONE,
+    Math.min(
+      Math.floor(duckTilesFar.length * OBSTACLE_DENSITY),
+      Math.floor(frogTilesFar.length * OBSTACLE_DENSITY)
+    )
   );
 
   for (let i = 0; i < farCount; i++) {
@@ -1186,10 +1194,7 @@ function render() {
       
       tile.innerHTML = content + badges;
       if (extraClass) tile.classList.add(extraClass);
-      
-      // Click handler
-      tile.onclick = () => handleTileClick(r, c);
-      
+
       boardEl.appendChild(tile);
     }
   }
@@ -1339,12 +1344,26 @@ function handleTileClick(r, c) {
 
   // Дозволяємо кліки на відстань 1-2 клітинки
   if (dist >= 1 && dist <= 2) {
-    // Знаходимо шлях до цілі (використовуємо pathfinding для гравців)
-    const path = findPathForPlayer(player.row, player.col, r, c);
+    // Визначаємо чи клікнули на перешкоду
+    const clickedObstacle = findObstacle(r, c);
+
+    let path;
+    if (clickedObstacle) {
+      // Якщо клікнули на перешкоду - шлях може йти через перешкоди
+      path = findPathForPlayer(player.row, player.col, r, c);
+    } else {
+      // Якщо клікнули на пусту клітину - спочатку шукаємо шлях без перешкод
+      path = findPath(player.row, player.col, r, c, false);
+      // Якщо не знайшли - спробуємо через перешкоди
+      if (!path || path.length === 0 || path.length > 2) {
+        path = findPathForPlayer(player.row, player.col, r, c);
+      }
+    }
+
     if (path && path.length > 0 && path.length <= 2) {
-      // Встановлюємо шлях - можна завжди змінити натиснувши на інше місце
+      // Встановлюємо шлях
       player.targetPath = path;
-      // Оновлюємо тільки візуалізацію шляху, не перебудовуємо весь DOM
+      // Оновлюємо візуалізацію шляху
       updatePathVisualization();
     }
   }
@@ -1832,60 +1851,266 @@ function movePlayerOneStep(playerType) {
 }
 
 // ============ AI LOGIC ============
+
+// AI Tactics enum
+const AI_TACTICS = {
+  GET_TOTEM: 'get_totem',       // Йти за тотемом
+  RETURN_TOTEM: 'return_totem', // Нести тотем до бази
+  INTERCEPT: 'intercept',       // Перехопити ворога з тотемом
+  COLLECT_ALLIES: 'collect',    // Збирати союзників для HP
+  ATTACK: 'attack',             // Атакувати ворога
+  AVOID: 'avoid'                // Уникати бою (якщо слабший)
+};
+
 function aiMove() {
   if (!game.aiPlayer || game.gameOver) return;
 
   const ai = game.players[game.aiPlayer];
 
-  // AI планує шлях на 1-2 кроки кожен тік (як гравець)
-  // Якщо немає шляху або шлях закінчився - плануємо новий
-  if (!ai.targetPath || ai.targetPath.length === 0) {
-    planAIPath();
-  }
+  // AI переоцінює тактику кожен тік
+  const tactic = evaluateAITactic();
 
-  // Виконуємо один крок (використовуємо ту ж логіку що і для гравця)
+  // Плануємо шлях відповідно до тактики
+  planAIPath(tactic);
+
+  // Виконуємо один крок
   movePlayerOneStep(game.aiPlayer);
 }
 
-function planAIPath() {
+function evaluateAITactic() {
+  const ai = game.players[game.aiPlayer];
+  const human = game.players[game.humanPlayer];
+  const aiTotemKey = game.aiPlayer === 'duck' ? 'duck' : 'snake';
+  const humanTotemKey = game.humanPlayer === 'duck' ? 'duck' : 'snake';
+  const aiTotem = game.totems[aiTotemKey];
+  const humanTotem = game.totems[humanTotemKey];
+
+  // Пріоритет 1: Якщо AI має тотем - нести до бази
+  if (ai.hasTotem) {
+    return AI_TACTICS.RETURN_TOTEM;
+  }
+
+  // Пріоритет 2: Якщо ворог має тотем і AI сильніший - перехоплювати
+  if (human.hasTotem && ai.hp >= human.hp) {
+    const distToHuman = distance(ai.row, ai.col, human.row, human.col);
+    if (distToHuman <= 6) {
+      return AI_TACTICS.INTERCEPT;
+    }
+  }
+
+  // Пріоритет 3: Якщо HP низький і є союзники поруч - збирати
+  if (ai.hp <= 2) {
+    const nearbyAlly = findNearestAlly(game.aiPlayer, ai.row, ai.col);
+    if (nearbyAlly && distance(ai.row, ai.col, nearbyAlly.row, nearbyAlly.col) <= 3) {
+      return AI_TACTICS.COLLECT_ALLIES;
+    }
+  }
+
+  // Пріоритет 4: Якщо тотем доступний - йти за ним
+  if (aiTotem.pickedBy === null) {
+    return AI_TACTICS.GET_TOTEM;
+  }
+
+  // Пріоритет 5: Якщо AI сильніший - атакувати
+  if (ai.hp > human.hp + 1) {
+    return AI_TACTICS.ATTACK;
+  }
+
+  // Пріоритет 6: Збирати союзників для посилення
+  return AI_TACTICS.COLLECT_ALLIES;
+}
+
+function planAIPath(tactic) {
   const ai = game.players[game.aiPlayer];
   const human = game.players[game.humanPlayer];
 
-  // Determine AI goal
   let targetR, targetC;
+  let avoidObstacles = false;
 
-  if (ai.hasTotem) {
-    // Has totem - go to king zone
-    const kingZone = findNearestKingZone(game.aiPlayer, ai.row, ai.col);
-    if (kingZone) {
-      targetR = kingZone.row;
-      targetC = kingZone.col;
+  switch (tactic) {
+    case AI_TACTICS.RETURN_TOTEM: {
+      // Нести тотем - знайти найкращий шлях до king zone
+      const kingZone = findBestKingZone(game.aiPlayer, ai.row, ai.col, human);
+      if (kingZone) {
+        targetR = kingZone.row;
+        targetC = kingZone.col;
+        avoidObstacles = true; // Уникати перешкод щоб не витрачати HP
+      }
+      break;
     }
-  } else {
-    // Need totem - go get it
-    const totemKey = game.aiPlayer === 'duck' ? 'duck' : 'snake';
-    const totem = game.totems[totemKey];
-    if (totem.pickedBy === null) {
-      targetR = totem.row;
-      targetC = totem.col;
+
+    case AI_TACTICS.INTERCEPT: {
+      // Перехопити ворога - передбачити куди він рухається
+      const interceptPoint = predictInterceptPoint(human);
+      if (interceptPoint) {
+        targetR = interceptPoint.row;
+        targetC = interceptPoint.col;
+      } else {
+        targetR = human.row;
+        targetC = human.col;
+      }
+      break;
+    }
+
+    case AI_TACTICS.COLLECT_ALLIES: {
+      // Знайти найближчого союзника
+      const ally = findNearestAlly(game.aiPlayer, ai.row, ai.col);
+      if (ally) {
+        targetR = ally.row;
+        targetC = ally.col;
+        avoidObstacles = true;
+      } else {
+        // Якщо немає союзників - йти за тотемом або до центру
+        const totemKey = game.aiPlayer === 'duck' ? 'duck' : 'snake';
+        const totem = game.totems[totemKey];
+        if (totem.pickedBy === null) {
+          targetR = totem.row;
+          targetC = totem.col;
+        }
+      }
+      break;
+    }
+
+    case AI_TACTICS.GET_TOTEM: {
+      const totemKey = game.aiPlayer === 'duck' ? 'duck' : 'snake';
+      const totem = game.totems[totemKey];
+      if (totem.pickedBy === null) {
+        targetR = totem.row;
+        targetC = totem.col;
+        // Якщо ворог ближче до тотему - йти агресивніше (через перешкоди)
+        const aiDistToTotem = distance(ai.row, ai.col, totem.row, totem.col);
+        const humanDistToTotem = distance(human.row, human.col, totem.row, totem.col);
+        avoidObstacles = aiDistToTotem < humanDistToTotem;
+      }
+      break;
+    }
+
+    case AI_TACTICS.ATTACK: {
+      targetR = human.row;
+      targetC = human.col;
+      break;
+    }
+
+    case AI_TACTICS.AVOID: {
+      // Знайти безпечну позицію подалі від ворога
+      const safeSpot = findSafeSpot(ai, human);
+      if (safeSpot) {
+        targetR = safeSpot.row;
+        targetC = safeSpot.col;
+        avoidObstacles = true;
+      }
+      break;
     }
   }
 
   if (targetR === undefined) return;
 
-  // Find full path to target
-  const fullPath = findPathForPlayer(ai.row, ai.col, targetR, targetC);
+  // Знайти шлях
+  let fullPath;
+  if (avoidObstacles) {
+    // Спробувати шлях без перешкод
+    fullPath = findPath(ai.row, ai.col, targetR, targetC, false);
+    if (!fullPath || fullPath.length === 0) {
+      fullPath = findPathForPlayer(ai.row, ai.col, targetR, targetC);
+    }
+  } else {
+    fullPath = findPathForPlayer(ai.row, ai.col, targetR, targetC);
+  }
 
   if (fullPath && fullPath.length > 0) {
-    // AI планує на 1-2 кроки вперед (як гравець)
+    // AI планує на 1-2 кроки вперед
     ai.targetPath = fullPath.slice(0, 2);
   }
+}
+
+function findNearestAlly(playerType, fromR, fromC) {
+  let nearest = null;
+  let minDist = Infinity;
+
+  for (const ally of game.allies) {
+    if (ally.type === playerType && ally.row >= 0) {
+      const d = distance(fromR, fromC, ally.row, ally.col);
+      if (d < minDist) {
+        minDist = d;
+        nearest = ally;
+      }
+    }
+  }
+
+  return nearest;
+}
+
+function findBestKingZone(playerType, fromR, fromC, enemy) {
+  // Знайти king zone клітинку яка найдалі від ворога але близько до AI
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingZone(r, c) === playerType && !isTileBlocked(r, c)) {
+        const distFromAI = distance(fromR, fromC, r, c);
+        const distFromEnemy = distance(enemy.row, enemy.col, r, c);
+        // Score: близько до AI + далеко від ворога
+        const score = distFromEnemy * 2 - distFromAI;
+        if (score > bestScore) {
+          bestScore = score;
+          best = { row: r, col: c };
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
+function predictInterceptPoint(target) {
+  // Передбачити куди рухається ворог
+  if (target.targetPath && target.targetPath.length > 0) {
+    // Ворог має маршрут - перехопити на останній точці
+    const lastPoint = target.targetPath[target.targetPath.length - 1];
+    return { row: lastPoint.row, col: lastPoint.col };
+  }
+
+  // Якщо ворог несе тотем - він іде до своєї бази
+  if (target.hasTotem) {
+    const enemyType = target === game.players.duck ? 'duck' : 'frog';
+    return findNearestKingZone(enemyType, target.row, target.col);
+  }
+
+  return null;
+}
+
+function findSafeSpot(ai, enemy) {
+  // Знайти клітинку подалі від ворога
+  let best = null;
+  let maxDist = 0;
+
+  // Перевіряємо клітинки в радіусі 3
+  for (let dr = -3; dr <= 3; dr++) {
+    for (let dc = -3; dc <= 3; dc++) {
+      const r = ai.row + dr;
+      const c = ai.col + dc;
+
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+      if (isKingTile(r, c)) continue;
+      if (findObstacle(r, c)) continue;
+      if (findPlayer(r, c)) continue;
+
+      const distFromEnemy = distance(r, c, enemy.row, enemy.col);
+      if (distFromEnemy > maxDist) {
+        maxDist = distFromEnemy;
+        best = { row: r, col: c };
+      }
+    }
+  }
+
+  return best;
 }
 
 function findNearestKingZone(playerType, fromR, fromC) {
   let nearest = null;
   let minDist = Infinity;
-  
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (isKingZone(r, c) === playerType && !isTileBlocked(r, c)) {
@@ -1897,7 +2122,7 @@ function findNearestKingZone(playerType, fromR, fromC) {
       }
     }
   }
-  
+
   return nearest;
 }
 
@@ -2024,6 +2249,38 @@ function vibrate(pattern) {
 // ============ INIT ============
 loadSettings();
 initGame();
+
+// Event delegation for board clicks - handles clicks even during DOM rebuild
+document.getElementById('board').addEventListener('click', (e) => {
+  let tile = e.target.closest('.tile');
+
+  // Якщо клікнули між плитками (на gap), знаходимо найближчу плитку по координатах
+  if (!tile || tile.dataset.row === undefined) {
+    const board = document.getElementById('board');
+    const boardRect = board.getBoundingClientRect();
+    const padding = 8; // board padding
+
+    // Розраховуємо позицію кліку відносно дошки
+    const x = e.clientX - boardRect.left - padding;
+    const y = e.clientY - boardRect.top - padding;
+
+    // Розмір клітинки з gap
+    const cellWidth = (boardRect.width - padding * 2) / COLS;
+    const cellHeight = (boardRect.height - padding * 2) / ROWS;
+
+    // Визначаємо row і col
+    const col = Math.floor(x / cellWidth);
+    const row = Math.floor(y / cellHeight);
+
+    // Перевіряємо межі
+    if (row >= 0 && row < ROWS && col >= 0 && col < COLS && !isKingTile(row, col)) {
+      handleTileClick(row, col);
+    }
+    return;
+  }
+
+  handleTileClick(parseInt(tile.dataset.row), parseInt(tile.dataset.col));
+});
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
