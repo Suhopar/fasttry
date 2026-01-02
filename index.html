@@ -413,69 +413,416 @@
       content: '🤖';
       margin-left: 5px;
     }
+
+    /* ============ SCREENS ============ */
+    .screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+    .screen.active { display: flex; }
+
+    /* Main Menu */
+    .menu-title {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    .menu-subtitle {
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 40px;
+    }
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 250px;
+    }
+    .menu-btn {
+      padding: 18px 30px;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--bg);
+      color: #333;
+      box-shadow:
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
+      transition: all 0.2s;
+    }
+    .menu-btn:active {
+      box-shadow:
+        inset 4px 4px 8px var(--shadow-d),
+        inset -4px -4px 8px var(--shadow-l);
+    }
+    .menu-btn.primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    /* Settings Screen */
+    .settings-container {
+      width: 100%;
+      max-width: 320px;
+    }
+    .settings-title {
+      font-size: 1.5rem;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    .setting-item {
+      background: var(--bg);
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow:
+        4px 4px 8px var(--shadow-d),
+        -4px -4px 8px var(--shadow-l);
+    }
+    .setting-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .setting-options {
+      display: flex;
+      gap: 8px;
+    }
+    .setting-option {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: var(--bg);
+      color: #666;
+      box-shadow:
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l);
+      transition: all 0.2s;
+    }
+    .setting-option.selected {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow:
+        inset 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .setting-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toggle-switch {
+      width: 50px;
+      height: 28px;
+      background: var(--shadow-d);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .toggle-switch.on {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: left 0.3s;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-switch.on::after {
+      left: 25px;
+    }
+    .back-btn {
+      margin-top: 25px;
+      padding: 12px 30px;
+    }
+
+    /* Tutorial Screen */
+    .tutorial-container {
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+    .tutorial-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .tutorial-slide {
+      display: none;
+      background: var(--bg);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow:
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
+      min-height: 250px;
+    }
+    .tutorial-slide.active { display: block; }
+    .tutorial-slide h3 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    .tutorial-slide p {
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+    .tutorial-slide .emoji-big {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+    .tutorial-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .tutorial-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--shadow-d);
+      cursor: pointer;
+    }
+    .tutorial-dot.active {
+      background: #667eea;
+    }
+    .tutorial-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    /* Game Screen - тільки поле і інфо внизу */
+    #gameScreen {
+      padding: 10px;
+      justify-content: space-between;
+    }
+    .game-top {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .game-bottom {
+      width: 100%;
+      max-width: 320px;
+    }
+    .game-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 12px;
+      box-shadow:
+        4px 4px 8px var(--shadow-d),
+        -4px -4px 8px var(--shadow-l);
+    }
+    .game-info-left {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .game-info-right {
+      display: flex;
+      gap: 8px;
+    }
+    .game-btn-small {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: var(--bg);
+      box-shadow:
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l);
+    }
+    .game-btn-small:active {
+      box-shadow:
+        inset 2px 2px 4px var(--shadow-d),
+        inset -2px -2px 4px var(--shadow-l);
+    }
+
+    /* Character Select Modal - оновлений */
+    .char-select-title {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
 
-<!-- Character Selection Modal -->
-<div class="modal show" id="selectModal">
-  <div class="modal-content">
-    <h2>🎮 Обери персонажа</h2>
-    <p>За кого будеш грати?</p>
-    <div class="select-buttons">
-      <button class="select-btn duck-select" onclick="selectCharacter('duck')">
-        <span class="select-icon">🐤</span>
-        <span class="select-name">Каченя</span>
-      </button>
-      <button class="select-btn frog-select" onclick="selectCharacter('frog')">
-        <span class="select-icon">🐸</span>
-        <span class="select-name">Жабка</span>
-      </button>
+<!-- ============ MAIN MENU SCREEN ============ -->
+<div class="screen active" id="menuScreen">
+  <div class="menu-title">🐤 vs 🐸</div>
+  <div class="menu-subtitle">Качка проти Жабки</div>
+  <div class="menu-buttons">
+    <button class="menu-btn primary" onclick="showScreen('selectScreen')">▶️ Грати</button>
+    <button class="menu-btn" onclick="showScreen('settingsScreen')">⚙️ Налаштування</button>
+    <button class="menu-btn" onclick="showScreen('tutorialScreen')">📖 Як грати</button>
+  </div>
+</div>
+
+<!-- ============ CHARACTER SELECT SCREEN ============ -->
+<div class="screen" id="selectScreen">
+  <h2 class="char-select-title">🎮 Обери персонажа</h2>
+  <div class="select-buttons">
+    <button class="select-btn duck-select" onclick="selectCharacter('duck')">
+      <span class="select-icon">🐤</span>
+      <span class="select-name">Каченя</span>
+    </button>
+    <button class="select-btn frog-select" onclick="selectCharacter('frog')">
+      <span class="select-icon">🐸</span>
+      <span class="select-name">Жабка</span>
+    </button>
+  </div>
+  <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+</div>
+
+<!-- ============ SETTINGS SCREEN ============ -->
+<div class="screen" id="settingsScreen">
+  <div class="settings-container">
+    <h2 class="settings-title">⚙️ Налаштування</h2>
+
+    <div class="setting-item">
+      <div class="setting-label">Швидкість гри</div>
+      <div class="setting-options">
+        <button class="setting-option" data-speed="1600" onclick="setSpeed(1600)">Повільно</button>
+        <button class="setting-option selected" data-speed="1200" onclick="setSpeed(1200)">Нормально</button>
+        <button class="setting-option" data-speed="800" onclick="setSpeed(800)">Швидко</button>
+      </div>
+    </div>
+
+    <div class="setting-item setting-toggle">
+      <div class="setting-label">Вібрація</div>
+      <div class="toggle-switch on" id="vibrationToggle" onclick="toggleVibration()"></div>
+    </div>
+
+    <div class="setting-item setting-toggle">
+      <div class="setting-label">Звуки</div>
+      <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
+    </div>
+
+    <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+  </div>
+</div>
+
+<!-- ============ TUTORIAL SCREEN ============ -->
+<div class="screen" id="tutorialScreen">
+  <div class="tutorial-container">
+    <h2 class="tutorial-title">📖 Як грати</h2>
+
+    <div class="tutorial-slide active" data-slide="0">
+      <div class="emoji-big">🎯</div>
+      <h3>Мета гри</h3>
+      <p>Забери свій тотем з ворожої території та донеси його до свого Короля!</p>
+    </div>
+
+    <div class="tutorial-slide" data-slide="1">
+      <div class="emoji-big">👆</div>
+      <h3>Керування</h3>
+      <p>Клікни на клітинку щоб рухатись. Клікни на ворога щоб атакувати. Клікни на перешкоду щоб зламати.</p>
+    </div>
+
+    <div class="tutorial-slide" data-slide="2">
+      <div class="emoji-big">❤️</div>
+      <h3>HP система</h3>
+      <p>Союзники 🐣 приносять +1 HP. Ламання перешкод коштує -1 HP. В бою перемагає той, у кого більше HP!</p>
+    </div>
+
+    <div class="tutorial-slide" data-slide="3">
+      <div class="emoji-big">🏆</div>
+      <h3>Перемога</h3>
+      <p>Підбери свій тотем і занеси його в зону біля свого Короля. Але бережись ворога!</p>
+    </div>
+
+    <div class="tutorial-nav">
+      <div class="tutorial-dot active" onclick="goToSlide(0)"></div>
+      <div class="tutorial-dot" onclick="goToSlide(1)"></div>
+      <div class="tutorial-dot" onclick="goToSlide(2)"></div>
+      <div class="tutorial-dot" onclick="goToSlide(3)"></div>
+    </div>
+
+    <div class="tutorial-buttons">
+      <button class="btn" id="tutorialPrev" onclick="prevSlide()" style="visibility: hidden;">← Назад</button>
+      <button class="btn" id="tutorialNext" onclick="nextSlide()">Далі →</button>
     </div>
   </div>
 </div>
 
-<!-- HUD -->
-<div class="hud">
-  <div class="player-info duck">
-    <span class="player-icon">🐤</span>
-    <span class="player-hp" id="duckHp">❤️ 1</span>
-    <span class="player-totem" id="duckTotem"></span>
+<!-- ============ GAME SCREEN ============ -->
+<div class="screen" id="gameScreen">
+  <div class="game-top">
+    <div class="board-container">
+      <div class="board" id="board"></div>
+      <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
+      <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
+    </div>
   </div>
-  <div class="player-info frog">
-    <span class="player-icon">🐸</span>
-    <span class="player-hp" id="frogHp">❤️ 1</span>
-    <span class="player-totem" id="frogTotem"></span>
+
+  <div class="game-bottom">
+    <div class="game-info">
+      <div class="game-info-left">
+        <span>🐤 <span id="duckHp">❤️1</span></span>
+        <span id="duckTotem"></span>
+        <span style="margin: 0 8px;">|</span>
+        <span>🐸 <span id="frogHp">❤️1</span></span>
+        <span id="frogTotem"></span>
+      </div>
+      <div class="game-info-right">
+        <span id="turnInfo">Тік: 0</span>
+        <button class="game-btn-small" onclick="pauseGame()">⏸️</button>
+        <button class="game-btn-small" onclick="goToMenu()">🏠</button>
+      </div>
+    </div>
   </div>
 </div>
-
-<!-- Board -->
-<div class="board-container">
-  <div class="board" id="board"></div>
-  <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
-  <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
-</div>
-
-<!-- Controls -->
-<div class="controls">
-  <button class="btn" onclick="resetGame()">🔄 Нова гра</button>
-</div>
-
-<div class="turn-info" id="turnInfo">Тік: 0 | Клікни на плитку щоб рухатись</div>
 
 <!-- Winner Modal -->
 <div class="modal" id="winModal">
   <div class="modal-content">
     <h2 id="winnerText">🏆</h2>
     <p id="winnerDesc">Переміг!</p>
-    <button class="btn" onclick="resetGame(); closeModal();">Грати знову</button>
+    <button class="btn" onclick="goToMenu()">🏠 В меню</button>
+  </div>
+</div>
+
+<!-- Pause Modal -->
+<div class="modal" id="pauseModal">
+  <div class="modal-content">
+    <h2>⏸️ Пауза</h2>
+    <p>Гра на паузі</p>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button class="btn" onclick="resumeGame()">▶️ Продовжити</button>
+      <button class="btn" onclick="goToMenu()">🏠 В меню</button>
+    </div>
   </div>
 </div>
 
 <script>
 // ============ CONSTANTS ============
 const COLS = 9, ROWS = 15;
-const TICK_MS = 1200;
+let TICK_MS = 1200;
 const ALLY_SPAWN_TICKS = 5; // 6 sec / 1.2 sec = 5 ticks
 const OBSTACLE_DENSITY = 0.3; // 30% chance per valid tile
 
@@ -800,156 +1147,46 @@ function updatePlayerSprites() {
 }
 
 function updateHUD() {
-  document.getElementById('duckHp').textContent = `❤️ ${game.players.duck.hp}`;
-  document.getElementById('frogHp').textContent = `❤️ ${game.players.frog.hp}`;
-  document.getElementById('duckTotem').textContent = game.players.duck.hasTotem ? '🦆' : '';
-  document.getElementById('frogTotem').textContent = game.players.frog.hasTotem ? '🐍' : '';
-  
-  let turnText = `Тік: ${game.tick}`;
-  if (game.humanPlayer) {
-    const emoji = game.humanPlayer === 'duck' ? '🐤' : '🐸';
-    turnText += ` | Ти граєш за ${emoji}`;
-  }
-  document.getElementById('turnInfo').textContent = turnText;
+  // Update all HP displays (in game HUD)
+  document.querySelectorAll('#duckHp').forEach(el => {
+    el.textContent = `❤️ ${game.players.duck.hp}`;
+  });
+  document.querySelectorAll('#frogHp').forEach(el => {
+    el.textContent = `❤️ ${game.players.frog.hp}`;
+  });
+  document.querySelectorAll('#duckTotem').forEach(el => {
+    el.textContent = game.players.duck.hasTotem ? '🦆' : '';
+  });
+  document.querySelectorAll('#frogTotem').forEach(el => {
+    el.textContent = game.players.frog.hasTotem ? '🐍' : '';
+  });
+
+  // Update turn info - simplified for game screen
+  document.getElementById('turnInfo').textContent = `Тік: ${game.tick}`;
 }
 
 // ============ GAME LOGIC ============
 function handleTileClick(r, c) {
   if (game.gameOver || !game.gameStarted) return;
   if (!game.humanPlayer) return;
-  
+
   const player = game.players[game.humanPlayer];
-  
+
   // Can't click on kings
   if (isKingTile(r, c)) return;
-  
+
   // Can't click on same tile
   if (player.row === r && player.col === c) return;
-  
+
   const dist = distance(player.row, player.col, r, c);
-  
-  // If clicking on adjacent tile (distance 1), do immediate action
+
+  // Тільки сусідні клітинки (distance 1) - встановлюємо ціль для наступного тіку
   if (dist === 1) {
-    const obstacle = findObstacle(r, c);
-    const enemyType = findPlayer(r, c);
-    const ally = findAlly(r, c);
-    
-    // Attack enemy player immediately
-    if (enemyType && enemyType !== game.humanPlayer) {
-      combat(game.humanPlayer, enemyType);
-      render();
-      updateHUD();
-      return;
-    }
-    
-    // Attack enemy ally immediately
-    if (ally && ally.type !== game.humanPlayer) {
-      if (player.hp > 1) {
-        player.hp--;
-        const allyTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
-        if (allyTile) allyTile.classList.add('breaking');
-        updateHUD();
-        updatePlayerSprites();
-        setTimeout(() => {
-          game.allies = game.allies.filter(a => a !== ally);
-          render();
-        }, 250);
-      } else {
-        // Show can't attack feedback
-        const allyTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
-        if (allyTile) {
-          allyTile.classList.add('cant-break');
-          setTimeout(() => allyTile.classList.remove('cant-break'), 300);
-        }
-      }
-      return;
-    }
-    
-    // Break obstacle immediately
-    if (obstacle) {
-      if (player.hp > 1) {
-        player.hp--;
-        const obstacleTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
-        if (obstacleTile) obstacleTile.classList.add('breaking');
-        updateHUD();
-        updatePlayerSprites();
-        setTimeout(() => {
-          game.obstacles = game.obstacles.filter(o => o !== obstacle);
-          render();
-        }, 250);
-      } else {
-        // Show can't break feedback
-        const obstacleTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
-        if (obstacleTile) {
-          obstacleTile.classList.add('cant-break');
-          setTimeout(() => obstacleTile.classList.remove('cant-break'), 300);
-        }
-      }
-      return;
-    }
-    
-    // Move to empty adjacent tile immediately
-    if (!isTileBlocked(r, c)) {
-      player.row = r;
-      player.col = c;
-      player.targetPath = []; // Clear any existing path
-      
-      // Pick up totem
-      const totemKey = findTotem(r, c);
-      if (totemKey) {
-        const totem = game.totems[totemKey];
-        if (totem.owner === game.humanPlayer && !totem.pickedBy) {
-          totem.pickedBy = game.humanPlayer;
-          player.hasTotem = true;
-          totem.row = -1;
-          totem.col = -1;
-        }
-      }
-      
-      // Check win
-      if (player.hasTotem) {
-        const zone = isKingZone(r, c);
-        if (zone === game.humanPlayer) {
-          gameWin(game.humanPlayer);
-          return;
-        }
-      }
-      
-      render();
-      updateHUD();
-      return;
-    }
-  }
-  
-  // For tiles further away, set path (can always change destination)
-  // Спочатку пробуємо знайти шлях до цільової клітинки
-  let path = findPath(player.row, player.col, r, c);
-
-  // Якщо ціль заблокована (перешкода/ворог), шукаємо шлях до сусідньої клітинки
-  if (!path && (findObstacle(r, c) || findPlayer(r, c) || findAlly(r, c))) {
-    // Знаходимо найближчу вільну клітинку поруч з ціллю
-    const directions = [{dr: -1, dc: 0}, {dr: 1, dc: 0}, {dr: 0, dc: -1}, {dr: 0, dc: 1}];
-    let bestPath = null;
-    for (const dir of directions) {
-      const nr = r + dir.dr;
-      const nc = c + dir.dc;
-      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
-      if (isKingTile(nr, nc)) continue;
-      const testPath = findPath(player.row, player.col, nr, nc);
-      if (testPath && (!bestPath || testPath.length < bestPath.length)) {
-        bestPath = testPath;
-      }
-    }
-    if (bestPath) {
-      // Додаємо цільову клітинку в кінець шляху (для атаки/ламання)
-      path = [...bestPath, {row: r, col: c}];
-    }
-  }
-
-  if (path && path.length > 0 && path.length <= 3) {
-    player.targetPath = path;
+    // Встановлюємо targetPath на 1 крок - дія виконається по тіку
+    player.targetPath = [{ row: r, col: c }];
     render();
   }
+  // Ігноруємо кліки на далекі клітинки
 }
 
 function combat(attackerType, defenderType) {
@@ -1174,16 +1411,13 @@ function selectCharacter(character) {
   game.humanPlayer = character;
   game.aiPlayer = character === 'duck' ? 'frog' : 'duck';
   game.gameStarted = true;
-  
-  // Update HUD to show AI indicator
-  document.querySelector(`.player-info.${game.aiPlayer}`).classList.add('ai');
-  
-  // Close selection modal
-  document.getElementById('selectModal').classList.remove('show');
-  
+
+  // Show game screen
+  showScreen('gameScreen');
+
   // Start the game tick
   startGameTick();
-  
+
   render();
   updateHUD();
 }
@@ -1256,9 +1490,8 @@ function movePlayerOneStep(playerType) {
         game.allies = game.allies.filter(a => a !== ally);
         render();
       }, 250);
-    } else {
-      player.targetPath = []; // Can't proceed
     }
+    player.targetPath = []; // Clear path after action
     return;
   }
   
@@ -1285,8 +1518,8 @@ function movePlayerOneStep(playerType) {
         obstacleTile.classList.add('cant-break');
         setTimeout(() => obstacleTile.classList.remove('cant-break'), 300);
       }
-      player.targetPath = []; // Can't proceed
     }
+    player.targetPath = []; // Clear path after action
     return;
   }
   
@@ -1475,6 +1708,133 @@ function findPathForAI(fromR, fromC, toR, toC) {
   return null;
 }
 
+// ============ SETTINGS ============
+let settings = {
+  speed: 1200,
+  vibration: true,
+  sound: false
+};
+
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('duckVsFrogSettings');
+    if (saved) {
+      settings = { ...settings, ...JSON.parse(saved) };
+      TICK_MS = settings.speed;
+      updateSettingsUI();
+    }
+  } catch (e) {}
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('duckVsFrogSettings', JSON.stringify(settings));
+  } catch (e) {}
+}
+
+function updateSettingsUI() {
+  // Speed buttons
+  document.querySelectorAll('.setting-option').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.speed) === settings.speed);
+  });
+  // Toggles
+  document.getElementById('vibrationToggle').classList.toggle('on', settings.vibration);
+  document.getElementById('soundToggle').classList.toggle('on', settings.sound);
+}
+
+function setSpeed(speed) {
+  settings.speed = speed;
+  TICK_MS = speed;
+  saveSettings();
+  updateSettingsUI();
+}
+
+function toggleVibration() {
+  settings.vibration = !settings.vibration;
+  saveSettings();
+  updateSettingsUI();
+  if (settings.vibration && navigator.vibrate) {
+    navigator.vibrate(50);
+  }
+}
+
+function toggleSound() {
+  settings.sound = !settings.sound;
+  saveSettings();
+  updateSettingsUI();
+}
+
+// ============ SCREEN NAVIGATION ============
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+// ============ TUTORIAL ============
+let currentSlide = 0;
+const totalSlides = 4;
+
+function goToSlide(index) {
+  currentSlide = index;
+  document.querySelectorAll('.tutorial-slide').forEach((slide, i) => {
+    slide.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === index);
+  });
+  // Update buttons
+  document.getElementById('tutorialPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+  document.getElementById('tutorialNext').textContent = index === totalSlides - 1 ? 'Готово ✓' : 'Далі →';
+}
+
+function nextSlide() {
+  if (currentSlide < totalSlides - 1) {
+    goToSlide(currentSlide + 1);
+  } else {
+    showScreen('menuScreen');
+    goToSlide(0);
+  }
+}
+
+function prevSlide() {
+  if (currentSlide > 0) {
+    goToSlide(currentSlide - 1);
+  }
+}
+
+// ============ GAME CONTROLS ============
+function pauseGame() {
+  if (game.tickTimer) {
+    clearInterval(game.tickTimer);
+    game.tickTimer = null;
+  }
+  document.getElementById('pauseModal').classList.add('show');
+}
+
+function resumeGame() {
+  document.getElementById('pauseModal').classList.remove('show');
+  startGameTick();
+}
+
+function goToMenu() {
+  if (game.tickTimer) {
+    clearInterval(game.tickTimer);
+    game.tickTimer = null;
+  }
+  document.getElementById('pauseModal').classList.remove('show');
+  document.getElementById('winModal').classList.remove('show');
+  showScreen('menuScreen');
+  initGame();
+}
+
+function vibrate(pattern) {
+  if (settings.vibration && navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
+}
+
+// ============ INIT ============
+loadSettings();
 initGame();
 
 // Cleanup on page unload
