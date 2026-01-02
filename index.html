@@ -146,6 +146,23 @@
     .tile.obstacle {
       background: rgba(200, 200, 200, 0.5);
     }
+    .tile.obstacle.breaking {
+      animation: obstacle-break 0.3s ease-out;
+    }
+    @keyframes obstacle-break {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.5; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    .tile.obstacle.cant-break {
+      animation: obstacle-shake 0.3s ease-out;
+    }
+    @keyframes obstacle-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    
     .tile.player {
       z-index: 10;
       box-shadow: 
@@ -153,9 +170,56 @@
         -3px -3px 6px var(--shadow-l),
         0 0 0 2px rgba(100, 150, 255, 0.5);
     }
+    
+    /* Animated player sprites */
+    .player-sprite {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--bg);
+      z-index: 20;
+      pointer-events: none;
+      transition: left 0.3s ease-out, top 0.3s ease-out;
+      box-shadow: 
+        3px 3px 6px var(--shadow-d),
+        -3px -3px 6px var(--shadow-l),
+        0 0 0 2px rgba(100, 150, 255, 0.5);
+    }
+    .player-sprite .hp-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .player-sprite .totem-indicator {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.6rem;
+      background: white;
+      border-radius: 50%;
+      padding: 2px;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    
     .tile.ally {
       font-size: 0.7rem;
       opacity: 0.8;
+    }
+    .tile.ally.breaking {
+      animation: obstacle-break 0.3s ease-out;
     }
     
     /* Path visualization for allies */
@@ -388,6 +452,8 @@
 <!-- Board -->
 <div class="board-container">
   <div class="board" id="board"></div>
+  <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
+  <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
 </div>
 
 <!-- Controls -->
@@ -655,21 +721,11 @@ function render() {
         extraClass = 'ally';
       }
       
-      // Players
+      // Players - don't render in tiles, use sprites instead
+      // Just mark the tile
       const playerType = findPlayer(r, c);
       if (playerType) {
-        const player = game.players[playerType];
-        content = playerType === 'duck' ? EMOJI.duckPlayer : EMOJI.frogPlayer;
         extraClass = 'player';
-        
-        // HP badge
-        badges += `<span class="hp-badge">${player.hp}</span>`;
-        
-        // Totem indicator
-        if (player.hasTotem) {
-          const totemEmoji = playerType === 'duck' ? EMOJI.duckTotem : EMOJI.snakeTotem;
-          badges += `<span class="totem-indicator">${totemEmoji}</span>`;
-        }
       }
       
       tile.innerHTML = content + badges;
@@ -680,6 +736,66 @@ function render() {
       
       boardEl.appendChild(tile);
     }
+  }
+  
+  // Update player sprite positions
+  updatePlayerSprites();
+}
+
+// Update animated player sprites
+function updatePlayerSprites() {
+  const boardEl = document.getElementById('board');
+  const boardRect = boardEl.getBoundingClientRect();
+  const padding = 8;
+  const gap = 3;
+  
+  const cellWidth = (boardRect.width - padding * 2 - gap * 8) / 9;
+  const cellHeight = (boardRect.height - padding * 2 - gap * 14) / 15;
+  
+  // Duck sprite
+  const duck = game.players.duck;
+  const duckSprite = document.getElementById('duckSprite');
+  duckSprite.style.width = cellWidth + 'px';
+  duckSprite.style.height = cellHeight + 'px';
+  duckSprite.style.fontSize = (cellHeight * 0.6) + 'px';
+  duckSprite.style.left = (padding + duck.col * (cellWidth + gap)) + 'px';
+  duckSprite.style.top = (padding + duck.row * (cellHeight + gap)) + 'px';
+  document.getElementById('duckSpriteBadge').textContent = duck.hp;
+  
+  // Update totem indicator
+  let duckTotem = duckSprite.querySelector('.totem-indicator');
+  if (duck.hasTotem) {
+    if (!duckTotem) {
+      duckTotem = document.createElement('span');
+      duckTotem.className = 'totem-indicator';
+      duckSprite.appendChild(duckTotem);
+    }
+    duckTotem.textContent = EMOJI.duckTotem;
+  } else if (duckTotem) {
+    duckTotem.remove();
+  }
+  
+  // Frog sprite
+  const frog = game.players.frog;
+  const frogSprite = document.getElementById('frogSprite');
+  frogSprite.style.width = cellWidth + 'px';
+  frogSprite.style.height = cellHeight + 'px';
+  frogSprite.style.fontSize = (cellHeight * 0.6) + 'px';
+  frogSprite.style.left = (padding + frog.col * (cellWidth + gap)) + 'px';
+  frogSprite.style.top = (padding + frog.row * (cellHeight + gap)) + 'px';
+  document.getElementById('frogSpriteBadge').textContent = frog.hp;
+  
+  // Update totem indicator
+  let frogTotem = frogSprite.querySelector('.totem-indicator');
+  if (frog.hasTotem) {
+    if (!frogTotem) {
+      frogTotem = document.createElement('span');
+      frogTotem.className = 'totem-indicator';
+      frogSprite.appendChild(frogTotem);
+    }
+    frogTotem.textContent = EMOJI.snakeTotem;
+  } else if (frogTotem) {
+    frogTotem.remove();
   }
 }
 
@@ -710,7 +826,102 @@ function handleTileClick(r, c) {
   // Can't click on same tile
   if (player.row === r && player.col === c) return;
   
-  // Find path to target (max 3 steps)
+  const dist = distance(player.row, player.col, r, c);
+  
+  // If clicking on adjacent tile (distance 1), do immediate action
+  if (dist === 1) {
+    const obstacle = findObstacle(r, c);
+    const enemyType = findPlayer(r, c);
+    const ally = findAlly(r, c);
+    
+    // Attack enemy player immediately
+    if (enemyType && enemyType !== game.humanPlayer) {
+      combat(game.humanPlayer, enemyType);
+      render();
+      updateHUD();
+      return;
+    }
+    
+    // Attack enemy ally immediately
+    if (ally && ally.type !== game.humanPlayer) {
+      if (player.hp > 1) {
+        player.hp--;
+        const allyTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+        if (allyTile) allyTile.classList.add('breaking');
+        updateHUD();
+        updatePlayerSprites();
+        setTimeout(() => {
+          game.allies = game.allies.filter(a => a !== ally);
+          render();
+        }, 250);
+      } else {
+        // Show can't attack feedback
+        const allyTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+        if (allyTile) {
+          allyTile.classList.add('cant-break');
+          setTimeout(() => allyTile.classList.remove('cant-break'), 300);
+        }
+      }
+      return;
+    }
+    
+    // Break obstacle immediately
+    if (obstacle) {
+      if (player.hp > 1) {
+        player.hp--;
+        const obstacleTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+        if (obstacleTile) obstacleTile.classList.add('breaking');
+        updateHUD();
+        updatePlayerSprites();
+        setTimeout(() => {
+          game.obstacles = game.obstacles.filter(o => o !== obstacle);
+          render();
+        }, 250);
+      } else {
+        // Show can't break feedback
+        const obstacleTile = document.querySelector(`.tile[data-row="${r}"][data-col="${c}"]`);
+        if (obstacleTile) {
+          obstacleTile.classList.add('cant-break');
+          setTimeout(() => obstacleTile.classList.remove('cant-break'), 300);
+        }
+      }
+      return;
+    }
+    
+    // Move to empty adjacent tile immediately
+    if (!isTileBlocked(r, c)) {
+      player.row = r;
+      player.col = c;
+      player.targetPath = []; // Clear any existing path
+      
+      // Pick up totem
+      const totemKey = findTotem(r, c);
+      if (totemKey) {
+        const totem = game.totems[totemKey];
+        if (totem.owner === game.humanPlayer && !totem.pickedBy) {
+          totem.pickedBy = game.humanPlayer;
+          player.hasTotem = true;
+          totem.row = -1;
+          totem.col = -1;
+        }
+      }
+      
+      // Check win
+      if (player.hasTotem) {
+        const zone = isKingZone(r, c);
+        if (zone === game.humanPlayer) {
+          gameWin(game.humanPlayer);
+          return;
+        }
+      }
+      
+      render();
+      updateHUD();
+      return;
+    }
+  }
+  
+  // For tiles further away, set path (can always change)
   const path = findPath(player.row, player.col, r, c);
   
   if (path && path.length > 0 && path.length <= 3) {
@@ -792,7 +1003,7 @@ function updateAllyPaths() {
     const ally = game.allies[i];
     if (ally.row < 0) continue;
     const player = game.players[ally.type];
-    const path = findPath(ally.row, ally.col, player.row, player.col);
+    const path = findPath(ally.row, ally.col, player.row, player.col, false); // allies can't break obstacles
     if (path) {
       game.allyPaths[i] = path;
     }
@@ -813,14 +1024,19 @@ function moveAllies() {
       continue;
     }
     
-    // Use BFS to find optimal path
-    const path = findPath(ally.row, ally.col, player.row, player.col);
+    // Use BFS to find optimal path - allies CAN'T break obstacles (false parameter)
+    // If path is blocked by obstacles, ally won't move
+    const path = findPath(ally.row, ally.col, player.row, player.col, false);
     if (path && path.length > 0) {
-      // Store path for visualization
-      game.allyPaths[i] = path;
-      // Move to next step
-      ally.row = path[0].row;
-      ally.col = path[0].col;
+      // Check if next step is actually free (not blocked by other allies)
+      const nextStep = path[0];
+      if (!findAlly(nextStep.row, nextStep.col)) {
+        // Store path for visualization
+        game.allyPaths[i] = path;
+        // Move to next step
+        ally.row = nextStep.row;
+        ally.col = nextStep.col;
+      }
     }
   }
   
@@ -829,7 +1045,8 @@ function moveAllies() {
 }
 
 // BFS pathfinding - returns full path to target
-function findPath(fromR, fromC, toR, toC) {
+// allowObstacles = true for player movement (they can break obstacles)
+function findPath(fromR, fromC, toR, toC, allowObstacles = true) {
   const visited = new Set();
   const queue = [{ r: fromR, c: fromC, path: [] }];
   visited.add(`${fromR},${fromC}`);
@@ -844,8 +1061,8 @@ function findPath(fromR, fromC, toR, toC) {
   while (queue.length > 0) {
     const current = queue.shift();
     
-    // Found target (or adjacent to it)
-    if (distance(current.r, current.c, toR, toC) <= 1) {
+    // Found target
+    if (current.r === toR && current.c === toC) {
       return current.path;
     }
     
@@ -857,7 +1074,8 @@ function findPath(fromR, fromC, toR, toC) {
       if (visited.has(key)) continue;
       if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
       if (isKingTile(nr, nc)) continue;
-      if (findObstacle(nr, nc)) continue;
+      // Allow obstacles if flag is set (player can break them)
+      if (!allowObstacles && findObstacle(nr, nc)) continue;
       // Can't walk through players (except target)
       const playerOnTile = findPlayer(nr, nc);
       if (playerOnTile && !(nr === toR && nc === toC)) continue;
@@ -988,8 +1206,17 @@ function movePlayerOneStep(playerType) {
   if (ally && ally.type !== playerType) {
     if (player.hp > 1) {
       player.hp--;
-      game.allies = game.allies.filter(a => a !== ally);
-      // Don't remove from path - will try again next tick or move
+      // Add death animation to ally tile
+      const allyTile = document.querySelector(`.tile[data-row="${nextStep.row}"][data-col="${nextStep.col}"]`);
+      if (allyTile) {
+        allyTile.classList.add('breaking');
+      }
+      updateHUD();
+      updatePlayerSprites();
+      setTimeout(() => {
+        game.allies = game.allies.filter(a => a !== ally);
+        render();
+      }, 250);
     } else {
       player.targetPath = []; // Can't proceed
     }
@@ -1000,9 +1227,25 @@ function movePlayerOneStep(playerType) {
   if (obstacle) {
     if (player.hp > 1) {
       player.hp--;
-      game.obstacles = game.obstacles.filter(o => o !== obstacle);
-      // Don't remove from path - next tick can move through
+      // Add breaking animation
+      const obstacleTile = document.querySelector(`.tile[data-row="${nextStep.row}"][data-col="${nextStep.col}"]`);
+      if (obstacleTile) {
+        obstacleTile.classList.add('breaking');
+      }
+      updateHUD();
+      updatePlayerSprites(); // Update sprite HP badge
+      // Remove obstacle after animation
+      setTimeout(() => {
+        game.obstacles = game.obstacles.filter(o => o !== obstacle);
+        render();
+      }, 250);
     } else {
+      // Show can't break feedback
+      const obstacleTile = document.querySelector(`.tile[data-row="${nextStep.row}"][data-col="${nextStep.col}"]`);
+      if (obstacleTile) {
+        obstacleTile.classList.add('cant-break');
+        setTimeout(() => obstacleTile.classList.remove('cant-break'), 300);
+      }
       player.targetPath = []; // Can't proceed
     }
     return;
