@@ -728,7 +728,8 @@
   <div class="menu-title">🐤 vs 🐸</div>
   <div class="menu-subtitle">Качка проти Жабки</div>
   <div class="menu-buttons">
-    <button class="menu-btn primary" onclick="showScreen('selectScreen')">▶️ Грати</button>
+    <button class="menu-btn primary" onclick="showScreen('selectScreen')">🤖 Грати з ботом</button>
+    <button class="menu-btn" onclick="alert('Скоро буде!')">👥 Грати з другом</button>
     <button class="menu-btn" onclick="showScreen('settingsScreen')">⚙️ Налаштування</button>
     <button class="menu-btn" onclick="showScreen('tutorialScreen')">📖 Як грати</button>
   </div>
@@ -736,7 +737,7 @@
 
 <!-- ============ CHARACTER SELECT SCREEN ============ -->
 <div class="screen" id="selectScreen">
-  <h2 class="char-select-title">🎮 Обери персонажа</h2>
+  <h2 class="char-select-title" id="selectTitle">🎮 Обери персонажа</h2>
   <div class="select-buttons">
     <button class="select-btn duck-select" onclick="selectCharacter('duck')">
       <span class="select-icon">🐤</span>
@@ -888,20 +889,20 @@ const EMOJI = {
 let game = {
   tick: 0,
   tickTimer: null,
-  
+
   humanPlayer: null, // 'duck' or 'frog'
   aiPlayer: null,    // opposite of humanPlayer
-  
+
   players: {
     duck: { row: 0, col: 5, hp: 1, hasTotem: false, targetPath: [] },
     frog: { row: 14, col: 3, hp: 1, hasTotem: false, targetPath: [] }
   },
-  
+
   totems: {
     snake: { row: 0, col: 0, owner: 'frog', pickedBy: null },
     duck: { row: 14, col: 8, owner: 'duck', pickedBy: null }
   },
-  
+
   allies: [],
   allyPaths: {}, // Store paths for visualization
   obstacles: [],
