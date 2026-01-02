@@ -491,31 +491,7 @@
     .setting-label {
       font-size: 0.9rem;
       color: #666;
-      margin-bottom: 10px;
-    }
-    .setting-options {
-      display: flex;
-      gap: 8px;
-    }
-    .setting-option {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      background: var(--bg);
-      color: #666;
-      box-shadow:
-        2px 2px 4px var(--shadow-d),
-        -2px -2px 4px var(--shadow-l);
-      transition: all 0.2s;
-    }
-    .setting-option.selected {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      box-shadow:
-        inset 2px 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: 0;
     }
     .setting-toggle {
       display: flex;
@@ -668,6 +644,26 @@
       font-size: 1.3rem;
       margin-bottom: 20px;
     }
+
+    /* Tick Progress Bar */
+    .tick-progress-container {
+      width: 100%;
+      height: 6px;
+      background: var(--shadow-d);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .tick-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 3px;
+      transition: width 0.05s linear;
+    }
+    .tick-progress-bar.reset {
+      transition: none;
+    }
   </style>
 </head>
 <body>
@@ -703,15 +699,6 @@
 <div class="screen" id="settingsScreen">
   <div class="settings-container">
     <h2 class="settings-title">⚙️ Налаштування</h2>
-
-    <div class="setting-item">
-      <div class="setting-label">Швидкість гри</div>
-      <div class="setting-options">
-        <button class="setting-option" data-speed="1600" onclick="setSpeed(1600)">Повільно</button>
-        <button class="setting-option selected" data-speed="1200" onclick="setSpeed(1200)">Нормально</button>
-        <button class="setting-option" data-speed="800" onclick="setSpeed(800)">Швидко</button>
-      </div>
-    </div>
 
     <div class="setting-item setting-toggle">
       <div class="setting-label">Вібрація</div>
@@ -795,6 +782,9 @@
         <button class="game-btn-small" onclick="goToMenu()">🏠</button>
       </div>
     </div>
+    <div class="tick-progress-container">
+      <div class="tick-progress-bar" id="tickProgress"></div>
+    </div>
   </div>
 </div>
 
@@ -822,8 +812,8 @@
 <script>
 // ============ CONSTANTS ============
 const COLS = 9, ROWS = 15;
-let TICK_MS = 1200;
-const ALLY_SPAWN_TICKS = 5; // 6 sec / 1.2 sec = 5 ticks
+const TICK_MS = 1000; // 1 second per tick
+const ALLY_SPAWN_TICKS = 6; // 6 sec / 1 sec = 6 ticks
 const OBSTACLE_DENSITY = 0.3; // 30% chance per valid tile
 
 // Diagonal divider from (col 0, row 3) to (col 8, row 11) in 0-indexed
@@ -864,9 +854,13 @@ let game = {
   allies: [],
   allyPaths: {}, // Store paths for visualization
   obstacles: [],
-  
+
   gameOver: false,
-  gameStarted: false
+  gameStarted: false,
+
+  // Tick progress animation
+  tickProgressTimer: null,
+  tickStartTime: 0
 };
 
 // ============ HELPERS ============
@@ -1180,13 +1174,16 @@ function handleTileClick(r, c) {
 
   const dist = distance(player.row, player.col, r, c);
 
-  // Тільки сусідні клітинки (distance 1) - встановлюємо ціль для наступного тіку
-  if (dist === 1) {
-    // Встановлюємо targetPath на 1 крок - дія виконається по тіку
-    player.targetPath = [{ row: r, col: c }];
-    render();
+  // Дозволяємо кліки на відстань 1-2 клітинки
+  if (dist >= 1 && dist <= 2) {
+    // Знаходимо шлях до цілі (використовуємо pathfinding для гравців)
+    const path = findPathForPlayer(player.row, player.col, r, c);
+    if (path && path.length > 0 && path.length <= 2) {
+      // Встановлюємо шлях - можна завжди змінити натиснувши на інше місце
+      player.targetPath = path;
+      render();
+    }
   }
-  // Ігноруємо кліки на далекі клітинки
 }
 
 function combat(attackerType, defenderType) {
@@ -1320,38 +1317,83 @@ function moveAllies() {
   game.allies = game.allies.filter(a => a.row >= 0);
 }
 
-// BFS pathfinding - returns full path to target
-// allowObstacles = true for player movement (they can break obstacles)
-function findPath(fromR, fromC, toR, toC, allowObstacles = true) {
+// BFS pathfinding for players - can walk through own allies, obstacles (break them)
+function findPathForPlayer(fromR, fromC, toR, toC) {
   const visited = new Set();
   const queue = [{ r: fromR, c: fromC, path: [] }];
   visited.add(`${fromR},${fromC}`);
-  
+
   const directions = [
     { dr: -1, dc: 0 },  // up
     { dr: 1, dc: 0 },   // down
     { dr: 0, dc: -1 },  // left
     { dr: 0, dc: 1 }    // right
   ];
-  
+
   while (queue.length > 0) {
     const current = queue.shift();
-    
+
     // Found target
     if (current.r === toR && current.c === toC) {
       return current.path;
     }
-    
+
     for (const dir of directions) {
       const nr = current.r + dir.dr;
       const nc = current.c + dir.dc;
       const key = `${nr},${nc}`;
-      
+
+      if (visited.has(key)) continue;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+      if (isKingTile(nr, nc)) continue;
+      // Players can go through obstacles (they'll break them)
+      // Players can go through allies (they'll kill enemy or absorb own)
+      // Can't walk through enemy player (except as target for combat)
+      const playerOnTile = findPlayer(nr, nc);
+      if (playerOnTile && !(nr === toR && nc === toC)) continue;
+
+      visited.add(key);
+      const newPath = [...current.path, { row: nr, col: nc }];
+      queue.push({ r: nr, c: nc, path: newPath });
+    }
+  }
+
+  return null;
+}
+
+// BFS pathfinding for allies - can't break obstacles, avoids other allies
+function findPath(fromR, fromC, toR, toC, allowObstacles = true) {
+  const visited = new Set();
+  const queue = [{ r: fromR, c: fromC, path: [] }];
+  visited.add(`${fromR},${fromC}`);
+
+  const directions = [
+    { dr: -1, dc: 0 },  // up
+    { dr: 1, dc: 0 },   // down
+    { dr: 0, dc: -1 },  // left
+    { dr: 0, dc: 1 }    // right
+  ];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    // Found target
+    if (current.r === toR && current.c === toC) {
+      return current.path;
+    }
+
+    for (const dir of directions) {
+      const nr = current.r + dir.dr;
+      const nc = current.c + dir.dc;
+      const key = `${nr},${nc}`;
+
       if (visited.has(key)) continue;
       if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
       if (isKingTile(nr, nc)) continue;
       // Allow obstacles if flag is set (player can break them)
       if (!allowObstacles && findObstacle(nr, nc)) continue;
+      // Allies should avoid other allies (except target) to prevent blocking
+      if (!allowObstacles && findAlly(nr, nc) && !(nr === toR && nc === toC)) continue;
       // Can't walk through players (except target)
       const playerOnTile = findPlayer(nr, nc);
       if (playerOnTile && !(nr === toR && nc === toC)) continue;
@@ -1424,11 +1466,44 @@ function selectCharacter(character) {
 
 function startGameTick() {
   if (game.tickTimer) clearInterval(game.tickTimer);
+  if (game.tickProgressTimer) cancelAnimationFrame(game.tickProgressTimer);
+
+  // Reset progress bar
+  const progressBar = document.getElementById('tickProgress');
+  progressBar.classList.add('reset');
+  progressBar.style.width = '0%';
+
+  // Start tick timer
+  game.tickStartTime = performance.now();
+
   game.tickTimer = setInterval(() => {
     if (!game.gameOver && game.gameStarted) {
       gameTick();
+      // Reset progress after tick
+      game.tickStartTime = performance.now();
+      progressBar.classList.add('reset');
+      progressBar.style.width = '0%';
+      // Remove reset class after reflow
+      requestAnimationFrame(() => {
+        progressBar.classList.remove('reset');
+      });
     }
   }, TICK_MS);
+
+  // Start progress animation
+  updateTickProgress();
+}
+
+function updateTickProgress() {
+  if (game.gameOver || !game.gameStarted) return;
+
+  const progressBar = document.getElementById('tickProgress');
+  const elapsed = performance.now() - game.tickStartTime;
+  const progress = Math.min((elapsed / TICK_MS) * 100, 100);
+
+  progressBar.style.width = progress + '%';
+
+  game.tickProgressTimer = requestAnimationFrame(updateTickProgress);
 }
 
 function gameTick() {
@@ -1475,7 +1550,7 @@ function movePlayerOneStep(playerType) {
     return;
   }
   
-  // Attack enemy ally
+  // Attack enemy ally (costs 1 HP)
   if (ally && ally.type !== playerType) {
     if (player.hp > 1) {
       player.hp--;
@@ -1493,6 +1568,13 @@ function movePlayerOneStep(playerType) {
     }
     player.targetPath = []; // Clear path after action
     return;
+  }
+
+  // Absorb own ally (gains 1 HP, moves through them)
+  if (ally && ally.type === playerType) {
+    player.hp++;
+    game.allies = game.allies.filter(a => a !== ally);
+    // Continue moving - don't return, let the move happen below
   }
   
   // Break obstacle
@@ -1523,12 +1605,22 @@ function movePlayerOneStep(playerType) {
     return;
   }
   
-  // Check if tile is blocked by something else
-  if (isTileBlocked(nextStep.row, nextStep.col)) {
-    player.targetPath = []; // Path blocked
+  // Check if tile is blocked by something else (obstacles handled above, allies handled above)
+  // Only check for out of bounds, kings, and other players
+  if (nextStep.row < 0 || nextStep.row >= ROWS || nextStep.col < 0 || nextStep.col >= COLS) {
+    player.targetPath = [];
     return;
   }
-  
+  if (isKingTile(nextStep.row, nextStep.col)) {
+    player.targetPath = [];
+    return;
+  }
+  // If there's still an obstacle (player couldn't break it), stop
+  if (findObstacle(nextStep.row, nextStep.col)) {
+    player.targetPath = [];
+    return;
+  }
+
   // Move player
   player.row = nextStep.row;
   player.col = nextStep.col;
@@ -1558,13 +1650,26 @@ function movePlayerOneStep(playerType) {
 // ============ AI LOGIC ============
 function aiMove() {
   if (!game.aiPlayer || game.gameOver) return;
-  
+
+  const ai = game.players[game.aiPlayer];
+
+  // AI планує шлях на 1-2 кроки кожен тік (як гравець)
+  // Якщо немає шляху або шлях закінчився - плануємо новий
+  if (!ai.targetPath || ai.targetPath.length === 0) {
+    planAIPath();
+  }
+
+  // Виконуємо один крок (використовуємо ту ж логіку що і для гравця)
+  movePlayerOneStep(game.aiPlayer);
+}
+
+function planAIPath() {
   const ai = game.players[game.aiPlayer];
   const human = game.players[game.humanPlayer];
-  
+
   // Determine AI goal
   let targetR, targetC;
-  
+
   if (ai.hasTotem) {
     // Has totem - go to king zone
     const kingZone = findNearestKingZone(game.aiPlayer, ai.row, ai.col);
@@ -1581,74 +1686,15 @@ function aiMove() {
       targetC = totem.col;
     }
   }
-  
+
   if (targetR === undefined) return;
-  
-  // Find path to target
-  const path = findPathForAI(ai.row, ai.col, targetR, targetC);
-  
-  if (path && path.length > 0) {
-    const nextStep = path[0];
-    
-    // Check what's on next step
-    const obstacle = findObstacle(nextStep.row, nextStep.col);
-    const enemyOnTile = findPlayer(nextStep.row, nextStep.col);
-    const enemyAlly = findAlly(nextStep.row, nextStep.col);
-    
-    // Attack enemy player if in the way and we have advantage
-    if (enemyOnTile && enemyOnTile !== game.aiPlayer) {
-      if (ai.hp >= human.hp) {
-        combat(game.aiPlayer, game.humanPlayer);
-        return;
-      }
-    }
-    
-    // Kill enemy ally if in the way
-    if (enemyAlly && enemyAlly.type !== game.aiPlayer) {
-      if (ai.hp > 1) {
-        ai.hp--;
-        game.allies = game.allies.filter(a => a !== enemyAlly);
-        return;
-      }
-    }
-    
-    // Break obstacle if in the way
-    if (obstacle) {
-      if (ai.hp > 1) {
-        ai.hp--;
-        game.obstacles = game.obstacles.filter(o => o !== obstacle);
-        return;
-      } else {
-        // Can't break, try to find alternative path
-        return;
-      }
-    }
-    
-    // Move
-    if (!isTileBlocked(nextStep.row, nextStep.col)) {
-      ai.row = nextStep.row;
-      ai.col = nextStep.col;
-      
-      // Pick up totem
-      const totemKey = findTotem(ai.row, ai.col);
-      if (totemKey) {
-        const totem = game.totems[totemKey];
-        if (totem.owner === game.aiPlayer && !totem.pickedBy) {
-          totem.pickedBy = game.aiPlayer;
-          ai.hasTotem = true;
-          totem.row = -1;
-          totem.col = -1;
-        }
-      }
-      
-      // Check win
-      if (ai.hasTotem) {
-        const zone = isKingZone(ai.row, ai.col);
-        if (zone === game.aiPlayer) {
-          gameWin(game.aiPlayer);
-        }
-      }
-    }
+
+  // Find full path to target
+  const fullPath = findPathForPlayer(ai.row, ai.col, targetR, targetC);
+
+  if (fullPath && fullPath.length > 0) {
+    // AI планує на 1-2 кроки вперед (як гравець)
+    ai.targetPath = fullPath.slice(0, 2);
   }
 }
 
@@ -1671,46 +1717,8 @@ function findNearestKingZone(playerType, fromR, fromC) {
   return nearest;
 }
 
-function findPathForAI(fromR, fromC, toR, toC) {
-  const visited = new Set();
-  const queue = [{ r: fromR, c: fromC, path: [] }];
-  visited.add(`${fromR},${fromC}`);
-  
-  const directions = [
-    { dr: -1, dc: 0 },
-    { dr: 1, dc: 0 },
-    { dr: 0, dc: -1 },
-    { dr: 0, dc: 1 }
-  ];
-  
-  while (queue.length > 0) {
-    const current = queue.shift();
-    
-    if (current.r === toR && current.c === toC) {
-      return current.path;
-    }
-    
-    for (const dir of directions) {
-      const nr = current.r + dir.dr;
-      const nc = current.c + dir.dc;
-      const key = `${nr},${nc}`;
-      
-      if (visited.has(key)) continue;
-      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
-      if (isKingTile(nr, nc)) continue;
-      
-      visited.add(key);
-      const newPath = [...current.path, { row: nr, col: nc }];
-      queue.push({ r: nr, c: nc, path: newPath });
-    }
-  }
-  
-  return null;
-}
-
 // ============ SETTINGS ============
 let settings = {
-  speed: 1200,
   vibration: true,
   sound: false
 };
@@ -1720,7 +1728,6 @@ function loadSettings() {
     const saved = localStorage.getItem('duckVsFrogSettings');
     if (saved) {
       settings = { ...settings, ...JSON.parse(saved) };
-      TICK_MS = settings.speed;
       updateSettingsUI();
     }
   } catch (e) {}
@@ -1733,20 +1740,9 @@ function saveSettings() {
 }
 
 function updateSettingsUI() {
-  // Speed buttons
-  document.querySelectorAll('.setting-option').forEach(btn => {
-    btn.classList.toggle('selected', parseInt(btn.dataset.speed) === settings.speed);
-  });
   // Toggles
   document.getElementById('vibrationToggle').classList.toggle('on', settings.vibration);
   document.getElementById('soundToggle').classList.toggle('on', settings.sound);
-}
-
-function setSpeed(speed) {
-  settings.speed = speed;
-  TICK_MS = speed;
-  saveSettings();
-  updateSettingsUI();
 }
 
 function toggleVibration() {
@@ -1808,6 +1804,10 @@ function pauseGame() {
     clearInterval(game.tickTimer);
     game.tickTimer = null;
   }
+  if (game.tickProgressTimer) {
+    cancelAnimationFrame(game.tickProgressTimer);
+    game.tickProgressTimer = null;
+  }
   document.getElementById('pauseModal').classList.add('show');
 }
 
@@ -1820,6 +1820,10 @@ function goToMenu() {
   if (game.tickTimer) {
     clearInterval(game.tickTimer);
     game.tickTimer = null;
+  }
+  if (game.tickProgressTimer) {
+    cancelAnimationFrame(game.tickProgressTimer);
+    game.tickProgressTimer = null;
   }
   document.getElementById('pauseModal').classList.remove('show');
   document.getElementById('winModal').classList.remove('show');
