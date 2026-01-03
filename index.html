@@ -278,12 +278,52 @@
         -2px -2px 4px var(--shadow-l),
         inset 0 0 8px rgba(100, 150, 255, 0.4);
     }
-    .tile.totem {
-      animation: totem-glow 2s ease-in-out infinite;
+    /* Totem sprites - similar to player sprites but smaller */
+    .totem-sprite {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      background: var(--bg);
+      z-index: 18;
+      pointer-events: none;
+      font-size: 0.85rem;
     }
-    @keyframes totem-glow {
-      0%, 100% { box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l); }
-      50% { box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 10px rgba(255, 215, 0, 0.5); }
+    .totem-sprite.snake-totem {
+      border: 2px solid var(--frog-color);
+      box-shadow:
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l),
+        0 0 0 2px rgba(46, 204, 113, 0.5);
+      animation: totem-pulse-frog 2s ease-in-out infinite;
+    }
+    .totem-sprite.duck-totem {
+      border: 2px solid var(--duck-color);
+      box-shadow:
+        2px 2px 4px var(--shadow-d),
+        -2px -2px 4px var(--shadow-l),
+        0 0 0 2px rgba(52, 152, 219, 0.5);
+      animation: totem-pulse-duck 2s ease-in-out infinite;
+    }
+    .totem-sprite.hidden {
+      display: none;
+    }
+    @keyframes totem-pulse-frog {
+      0%, 100% {
+        box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 0 2px rgba(46, 204, 113, 0.5);
+      }
+      50% {
+        box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 8px rgba(46, 204, 113, 0.7), 0 0 0 2px rgba(46, 204, 113, 0.7);
+      }
+    }
+    @keyframes totem-pulse-duck {
+      0%, 100% {
+        box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 0 2px rgba(52, 152, 219, 0.5);
+      }
+      50% {
+        box-shadow: 2px 2px 4px var(--shadow-d), -2px -2px 4px var(--shadow-l), 0 0 8px rgba(52, 152, 219, 0.7), 0 0 0 2px rgba(52, 152, 219, 0.7);
+      }
     }
 
     /* Highlight for valid moves */
@@ -502,26 +542,39 @@
     /* Settings Screen */
     .settings-container {
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
+      text-align: left;
     }
     .settings-title {
-      font-size: 1.5rem;
-      margin-bottom: 25px;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
       text-align: center;
     }
-    .setting-item {
+    .settings-content {
       background: var(--bg);
-      padding: 15px 20px;
-      border-radius: 12px;
-      margin-bottom: 15px;
+      padding: 20px;
+      border-radius: 16px;
       box-shadow:
-        4px 4px 8px var(--shadow-d),
-        -4px -4px 8px var(--shadow-l);
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
+    }
+    .setting-item {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .setting-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .setting-item:first-child {
+      padding-top: 0;
     }
     .setting-label {
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 0;
+      font-size: 0.95rem;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .setting-toggle {
       display: flex;
@@ -536,6 +589,7 @@
       position: relative;
       cursor: pointer;
       transition: background 0.3s;
+      box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
     }
     .toggle-switch.on {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -556,95 +610,84 @@
       left: 25px;
     }
     .back-btn {
-      margin-top: 25px;
-      padding: 12px 30px;
+      margin-bottom: 12px;
     }
 
     /* Tutorial Screen */
     .tutorial-container {
       width: 100%;
-      max-width: 320px;
-      text-align: center;
+      max-width: 340px;
+      text-align: left;
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .tutorial-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      text-align: center;
     }
-    .tutorial-slide {
-      display: none;
+    .tutorial-content {
       background: var(--bg);
-      padding: 25px;
+      padding: 20px;
       border-radius: 16px;
       box-shadow:
         6px 6px 12px var(--shadow-d),
         -6px -6px 12px var(--shadow-l);
-      min-height: 250px;
     }
-    .tutorial-slide.active { display: block; }
-    .tutorial-slide h3 {
-      font-size: 1.2rem;
-      margin-bottom: 15px;
+    .tutorial-section {
+      margin-bottom: 16px;
     }
-    .tutorial-slide p {
-      font-size: 0.95rem;
+    .tutorial-section:last-child {
+      margin-bottom: 0;
+    }
+    .tutorial-section h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tutorial-section p {
+      font-size: 0.85rem;
       color: #555;
       line-height: 1.5;
+      margin: 0;
     }
-    .tutorial-slide .emoji-big {
-      font-size: 3rem;
-      margin-bottom: 15px;
-    }
-    .tutorial-nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .tutorial-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--shadow-d);
-      cursor: pointer;
-    }
-    .tutorial-dot.active {
-      background: #667eea;
-    }
-    .tutorial-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-      justify-content: center;
+    .tutorial-section ul {
+      font-size: 0.85rem;
+      color: #555;
+      line-height: 1.6;
+      margin: 0;
+      padding-left: 20px;
     }
 
-    /* Game Screen - тільки поле і інфо внизу */
+    /* Game Screen - все щільно один під одним */
     #gameScreen {
-      padding: 10px;
-      justify-content: space-between;
+      padding: 0;
+      justify-content: flex-start;
+      gap: 0;
+    }
+    .match-score-bar {
+      flex-shrink: 0;
     }
     .game-top {
-      flex: 1;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
     }
     .game-bottom {
+      flex-shrink: 0;
       width: 100%;
-      max-width: 320px;
-      padding-bottom: 10px;
     }
     .game-panel {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 20px;
-      padding: 12px 20px;
+      padding: 10px 20px;
       background: var(--bg);
-      border-radius: 20px;
-      box-shadow:
-        6px 6px 12px var(--shadow-d),
-        -6px -6px 12px var(--shadow-l);
+      box-shadow: inset 0 4px 6px -4px var(--shadow-d);
     }
     .panel-btn {
       width: 44px;
@@ -709,6 +752,87 @@
       margin-bottom: 20px;
     }
 
+    /* Match Score Bar - тонкий рядок над полем */
+    .match-score-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 6px 16px;
+      background: var(--bg);
+      box-shadow:
+        0 2px 4px var(--shadow-d);
+    }
+    .score-duck, .score-frog {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .score-duck { color: #f39c12; }
+    .score-frog { color: #27ae60; }
+    .score-round {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    /* Powers Bar - каунтер + кнопки сил */
+    .powers-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--bg);
+      box-shadow: inset 0 4px 6px -4px var(--shadow-d);
+    }
+    .power-counter {
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      box-shadow:
+        inset 2px 2px 4px var(--shadow-d),
+        inset -2px -2px 4px var(--shadow-l);
+    }
+    .power-counter.ready {
+      animation: pulse-glow 1s infinite;
+      color: #f39c12;
+    }
+    .power-btn-small {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: var(--bg);
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow:
+        3px 3px 6px var(--shadow-d),
+        -3px -3px 6px var(--shadow-l);
+      transition: all 0.15s;
+    }
+    .power-btn-small:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .power-btn-small:not(:disabled):active {
+      box-shadow:
+        inset 2px 2px 4px var(--shadow-d),
+        inset -2px -2px 4px var(--shadow-l);
+    }
+    .power-btn-small:not(:disabled) {
+      animation: power-ready 1.5s infinite;
+    }
+    @keyframes power-ready {
+      0%, 100% { box-shadow: 3px 3px 6px var(--shadow-d), -3px -3px 6px var(--shadow-l), 0 0 0 rgba(243, 156, 18, 0); }
+      50% { box-shadow: 3px 3px 6px var(--shadow-d), -3px -3px 6px var(--shadow-l), 0 0 10px rgba(243, 156, 18, 0.5); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: inset 2px 2px 4px var(--shadow-d), inset -2px -2px 4px var(--shadow-l), 0 0 5px #f39c12; }
+      50% { box-shadow: inset 2px 2px 4px var(--shadow-d), inset -2px -2px 4px var(--shadow-l), 0 0 12px #f39c12; }
+    }
+
   </style>
 </head>
 <body>
@@ -728,10 +852,10 @@
   <div class="menu-title">🐤 vs 🐸</div>
   <div class="menu-subtitle">Качка проти Жабки</div>
   <div class="menu-buttons">
-    <button class="menu-btn primary" onclick="showScreen('selectScreen')">🤖 Грати з ботом</button>
-    <button class="menu-btn" onclick="alert('Скоро буде!')">👥 Грати з другом</button>
-    <button class="menu-btn" onclick="showScreen('settingsScreen')">⚙️ Налаштування</button>
-    <button class="menu-btn" onclick="showScreen('tutorialScreen')">📖 Як грати</button>
+    <button class="menu-btn primary" onclick="showScreen('selectScreen')">Грати з ботом</button>
+    <button class="menu-btn" onclick="alert('Скоро буде!')">Грати з другом</button>
+    <button class="menu-btn" onclick="showScreen('settingsScreen')">Налаштування</button>
+    <button class="menu-btn" onclick="showScreen('tutorialScreen')">Як грати</button>
   </div>
 </div>
 
@@ -754,79 +878,105 @@
 <!-- ============ SETTINGS SCREEN ============ -->
 <div class="screen" id="settingsScreen">
   <div class="settings-container">
+    <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
     <h2 class="settings-title">⚙️ Налаштування</h2>
 
-    <div class="setting-item setting-toggle">
-      <div class="setting-label">Вібрація</div>
-      <div class="toggle-switch on" id="vibrationToggle" onclick="toggleVibration()"></div>
-    </div>
+    <div class="settings-content">
+      <div class="setting-item setting-toggle">
+        <div class="setting-label">📳 Вібрація</div>
+        <div class="toggle-switch on" id="vibrationToggle" onclick="toggleVibration()"></div>
+      </div>
 
-    <div class="setting-item setting-toggle">
-      <div class="setting-label">Звуки</div>
-      <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
+      <div class="setting-item setting-toggle">
+        <div class="setting-label">🔊 Звуки</div>
+        <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
+      </div>
     </div>
-
-    <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
   </div>
 </div>
 
 <!-- ============ TUTORIAL SCREEN ============ -->
 <div class="screen" id="tutorialScreen">
   <div class="tutorial-container">
-    <h2 class="tutorial-title">📖 Як грати</h2>
+    <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
+    <h2 class="tutorial-title">📖 Правила гри</h2>
 
-    <div class="tutorial-slide active" data-slide="0">
-      <div class="emoji-big">🎯</div>
-      <h3>Мета гри</h3>
-      <p>Забери свій тотем з ворожої території та донеси його до свого Короля!</p>
-    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-section">
+        <h3>🎯 Мета</h3>
+        <p>Забери свій тотем (🐍 або 🦆) з ворожої бази та донеси його до зони свого Короля. Перший хто це зробить — виграє раунд. Гра до 3 перемог (BO5).</p>
+      </div>
 
-    <div class="tutorial-slide" data-slide="1">
-      <div class="emoji-big">👆</div>
-      <h3>Керування</h3>
-      <p>Клікни на клітинку щоб рухатись. Клікни на ворога щоб атакувати. Клікни на перешкоду щоб зламати.</p>
-    </div>
+      <div class="tutorial-section">
+        <h3>👆 Керування</h3>
+        <ul>
+          <li>Клікни на сусідню клітинку — рух</li>
+          <li>Клікни на ворога поруч — атака</li>
+          <li>Клікни на перешкоду — зламати (-1 HP)</li>
+        </ul>
+      </div>
 
-    <div class="tutorial-slide" data-slide="2">
-      <div class="emoji-big">❤️</div>
-      <h3>HP система</h3>
-      <p>Союзники 🐣 приносять +1 HP. Ламання перешкод коштує -1 HP. В бою перемагає той, у кого більше HP!</p>
-    </div>
+      <div class="tutorial-section">
+        <h3>❤️ HP та союзники</h3>
+        <p>Кожен такт на полі з'являються союзники (🐣/🐸). Наступи на союзника свого кольору щоб отримати +1 HP. В бою перемагає той, у кого більше HP. Переможець втрачає HP рівне HP переможеного.</p>
+      </div>
 
-    <div class="tutorial-slide" data-slide="3">
-      <div class="emoji-big">🏆</div>
-      <h3>Перемога</h3>
-      <p>Підбери свій тотем і занеси його в зону біля свого Короля. Але бережись ворога!</p>
-    </div>
+      <div class="tutorial-section">
+        <h3>⚡ Сили (бафи та дебафи)</h3>
+        <p>Знищ 5 перешкод щоб отримати силу. Лічильник показує прогрес. Можна використати лише 1 силу за раунд.</p>
+        <p style="margin-top: 8px;"><b>Бафи (на себе):</b></p>
+        <ul>
+          <li>🐣 Союзник — створити союзника на сусідній клітинці</li>
+          <li>⚡ Подвійний хід — зробити 2 ходи за один такт</li>
+        </ul>
+        <p style="margin-top: 8px;"><b>Дебафи (на ворога):</b></p>
+        <ul>
+          <li>💀 Вбити союзника — знищити найближчого ворожого союзника</li>
+          <li>❄️ Заморозка — ворог пропускає наступний такт</li>
+        </ul>
+      </div>
 
-    <div class="tutorial-nav">
-      <div class="tutorial-dot active" onclick="goToSlide(0)"></div>
-      <div class="tutorial-dot" onclick="goToSlide(1)"></div>
-      <div class="tutorial-dot" onclick="goToSlide(2)"></div>
-      <div class="tutorial-dot" onclick="goToSlide(3)"></div>
-    </div>
-
-    <div class="tutorial-buttons">
-      <button class="btn" id="tutorialPrev" onclick="prevSlide()" style="visibility: hidden;">← Назад</button>
-      <button class="btn" id="tutorialNext" onclick="nextSlide()">Далі →</button>
+      <div class="tutorial-section">
+        <h3>🏰 Територія</h3>
+        <p>Поле розділене діагоналлю. Зверху-справа територія Качки, знизу-зліва — Жаби. Кожна сторона має свого Короля та тотем ворога на своїй базі.</p>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ============ GAME SCREEN ============ -->
 <div class="screen" id="gameScreen">
+  <!-- Match Score - тонкий рядок над полем -->
+  <div class="match-score-bar" id="matchScore">
+    <span class="score-frog">🐸 <span id="frogWins">0</span></span>
+    <span class="score-round">Раунд <span id="roundNum">1</span></span>
+    <span class="score-duck"><span id="duckWins">0</span> 🐤</span>
+  </div>
+
   <div class="game-top">
     <div class="board-container">
       <div class="board" id="board"></div>
       <div id="allySpritesContainer"></div>
+      <div class="totem-sprite snake-totem" id="snakeTotemSprite">🐍</div>
+      <div class="totem-sprite duck-totem" id="duckTotemSprite">🦆</div>
       <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
       <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
     </div>
   </div>
 
   <div class="game-bottom">
+    <!-- Каунтер + кнопки сил -->
+    <div class="powers-bar">
+      <span class="power-counter" id="obstaclesCounter">⚡ 0/5</span>
+      <button class="power-btn-small" id="powerSpawnAlly" onclick="usePower('spawnAlly')" disabled>🐣</button>
+      <button class="power-btn-small" id="powerDoubleMove" onclick="usePower('doubleMove')" disabled>⚡</button>
+      <button class="power-btn-small" id="powerKillAlly" onclick="usePower('killAlly')" disabled>💀</button>
+      <button class="power-btn-small" id="powerFreeze" onclick="usePower('freeze')" disabled>❄️</button>
+    </div>
+
+    <!-- Такт + меню + пауза -->
     <div class="game-panel">
-      <button class="panel-btn" onclick="pauseGame()">⏸️</button>
+      <button class="panel-btn" id="pauseBtn" onclick="pauseGame()">⏸️</button>
       <div class="tick-ring-container">
         <svg class="tick-ring" viewBox="0 0 36 36">
           <circle class="tick-ring-bg" cx="18" cy="18" r="15.5"></circle>
@@ -860,6 +1010,14 @@
   </div>
 </div>
 
+<!-- Round Modal -->
+<div class="modal" id="roundModal">
+  <div class="modal-content">
+    <h2 id="roundTitle">Раунд 2</h2>
+    <p id="roundScore">🐤 1 : 0 🐸</p>
+  </div>
+</div>
+
 <script>
 // ============ CONSTANTS ============
 const COLS = 9, ROWS = 15;
@@ -886,6 +1044,9 @@ const EMOJI = {
 };
 
 // ============ GAME STATE ============
+const WINS_NEEDED = 3; // BO5 = до 3 перемог
+const OBSTACLES_FOR_POWER = 5; // Скільки перешкод потрібно зруйнувати для нагороди
+
 let game = {
   tick: 0,
   tickTimer: null,
@@ -893,27 +1054,56 @@ let game = {
   humanPlayer: null, // 'duck' or 'frog'
   aiPlayer: null,    // opposite of humanPlayer
 
+  // Match state (BO5)
+  match: {
+    duckWins: 0,
+    frogWins: 0,
+    round: 1
+  },
+
   players: {
-    duck: { row: 0, col: 5, hp: 1, hasTotem: false, targetPath: [] },
-    frog: { row: 14, col: 3, hp: 1, hasTotem: false, targetPath: [] }
+    duck: { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 },
+    frog: { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 }
   },
 
   totems: {
-    snake: { row: 0, col: 0, owner: 'frog', pickedBy: null },
-    duck: { row: 14, col: 8, owner: 'duck', pickedBy: null }
+    snake: { row: 1, col: 1, owner: 'frog', pickedBy: null },
+    duck: { row: 13, col: 7, owner: 'duck', pickedBy: null }
   },
 
   allies: [],
   allyPaths: {}, // Store paths for visualization
   obstacles: [],
+  initialObstacles: [], // Зберігаємо початкову кількість для перемішування
 
   gameOver: false,
   gameStarted: false,
 
   // Tick progress animation
   tickProgressTimer: null,
-  tickStartTime: 0
+  tickStartTime: 0,
+
+  // Active timeouts for cleanup
+  activeTimeouts: []
 };
+
+// Safe setTimeout with cleanup tracking
+function safeTimeout(callback, delay) {
+  const id = setTimeout(() => {
+    // Remove from active list after execution
+    const idx = game.activeTimeouts.indexOf(id);
+    if (idx > -1) game.activeTimeouts.splice(idx, 1);
+    callback();
+  }, delay);
+  game.activeTimeouts.push(id);
+  return id;
+}
+
+// Clear all active timeouts
+function clearAllTimeouts() {
+  game.activeTimeouts.forEach(id => clearTimeout(id));
+  game.activeTimeouts = [];
+}
 
 // ============ HELPERS ============
 const isKingTile = (r, c) => {
@@ -980,15 +1170,25 @@ function initGame() {
   game.gameStarted = false;
   game.humanPlayer = null;
   game.aiPlayer = null;
-  
+
+  // Reset board cache for new game
+  boardInitialized = false;
+
+  // Reset match state (BO5)
+  game.match = {
+    duckWins: 0,
+    frogWins: 0,
+    round: 1
+  };
+
   // Reset players
-  game.players.duck = { row: 0, col: 5, hp: 1, hasTotem: false, targetPath: [] };
-  game.players.frog = { row: 14, col: 3, hp: 1, hasTotem: false, targetPath: [] };
-  
+  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+
   // Reset totems
-  game.totems.snake = { row: 0, col: 0, owner: 'frog', pickedBy: null };
-  game.totems.duck = { row: 14, col: 8, owner: 'duck', pickedBy: null };
-  
+  game.totems.snake = { row: 1, col: 1, owner: 'frog', pickedBy: null };
+  game.totems.duck = { row: 13, col: 7, owner: 'duck', pickedBy: null };
+
   // Clear allies
   game.allies = [];
   game.allyPaths = {};
@@ -1001,8 +1201,8 @@ function initGame() {
   game.obstacles = [];
 
   // Helper: check if tile is near a totem (within 2 tiles)
-  const isNearSnakeTotem = (r, c) => distance(r, c, 0, 0) <= 2;
-  const isNearDuckTotem = (r, c) => distance(r, c, 14, 8) <= 2;
+  const isNearSnakeTotem = (r, c) => distance(r, c, 1, 1) <= 2;
+  const isNearDuckTotem = (r, c) => distance(r, c, 13, 7) <= 2;
 
   // Collect valid tiles - separate near-totem and far tiles
   const duckTilesNearTotem = []; // Near snake totem (duck territory, row 0 area)
@@ -1017,12 +1217,12 @@ function initGame() {
       if (isDivider(r, c)) continue;
 
       // Don't place on player start positions
-      if (r === 0 && c === 5) continue; // duck start
-      if (r === 14 && c === 3) continue; // frog start
+      if (r === 2 && c === 6) continue; // duck start
+      if (r === 12 && c === 2) continue; // frog start
 
       // Don't place on totem positions
-      if (r === 0 && c === 0) continue; // snake totem
-      if (r === 14 && c === 8) continue; // duck totem
+      if (r === 1 && c === 1) continue; // snake totem
+      if (r === 13 && c === 7) continue; // duck totem
 
       const territory = getTerritory(r, c);
       if (territory === 'duck') {
@@ -1097,109 +1297,137 @@ function initGame() {
 }
 
 // ============ RENDER ============
-function render() {
-  // Update ally paths for visualization
-  updateAllyPaths();
-  
+// Кеш тайлів для оптимізації
+let tileCache = new Map();
+let boardInitialized = false;
+
+function initBoard() {
   const boardEl = document.getElementById('board');
   boardEl.innerHTML = '';
-  
+  tileCache.clear();
+
   // Kings first
   const duckKing = document.createElement('div');
   duckKing.className = 'tile king duck-king';
   duckKing.textContent = EMOJI.duckKing;
   boardEl.appendChild(duckKing);
-  
+
   const frogKing = document.createElement('div');
   frogKing.className = 'tile king frog-king';
   frogKing.textContent = EMOJI.frogKing;
   boardEl.appendChild(frogKing);
-  
-  // All tiles
+
+  // Create all tiles once
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (isKingTile(r, c)) continue;
-      
+
       const tile = document.createElement('div');
       tile.className = 'tile';
       tile.dataset.row = r;
       tile.dataset.col = c;
       tile.style.gridColumn = c + 1;
       tile.style.gridRow = r + 1;
-      
-      // Zone styling
+
+      // Zone styling (static, never changes)
       const zone = isKingZone(r, c);
       if (zone === 'duck') tile.classList.add('duck-zone');
       if (zone === 'frog') tile.classList.add('frog-zone');
-      
-      // Divider diagonal styling
+
+      // Divider diagonal styling (static)
       if (isDivider(r, c)) tile.classList.add('divider');
-      
-      // Check if tile is on ally path
-      const getAllyPathType = () => {
-        for (let i = 0; i < game.allies.length; i++) {
-          const path = game.allyPaths[i];
-          if (path && path.some(p => p.row === r && p.col === c)) {
-            return game.allies[i].type;
-          }
-        }
-        return null;
-      };
-      
+
+      boardEl.appendChild(tile);
+      tileCache.set(`${r},${c}`, tile);
+    }
+  }
+
+  boardInitialized = true;
+}
+
+function render() {
+  // Initialize board once
+  if (!boardInitialized) {
+    initBoard();
+  }
+
+  // Update ally paths for visualization
+  updateAllyPaths();
+
+  // Prepare ally path lookup (Set for O(1) lookup)
+  const allyPathSet = new Map(); // key -> allyType
+  for (let i = 0; i < game.allies.length; i++) {
+    const path = game.allyPaths[i];
+    if (path) {
+      const allyType = game.allies[i].type;
+      path.forEach(p => {
+        const key = `${p.row},${p.col}`;
+        if (!allyPathSet.has(key)) allyPathSet.set(key, allyType);
+      });
+    }
+  }
+
+  // Prepare human path lookup
+  const humanPathSet = new Set();
+  if (game.humanPlayer) {
+    const humanPath = game.players[game.humanPlayer].targetPath;
+    if (humanPath) {
+      humanPath.forEach(p => humanPathSet.add(`${p.row},${p.col}`));
+    }
+  }
+
+  // Update only changed tiles
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingTile(r, c)) continue;
+
+      const key = `${r},${c}`;
+      const tile = tileCache.get(key);
+      if (!tile) continue;
+
+      // Reset dynamic classes
+      tile.classList.remove('ally-path-duck', 'ally-path-frog', 'player-path', 'obstacle', 'ally', 'player');
+
       // Content
       let content = '';
-      let extraClass = '';
-      let badges = '';
-      
-      // Path visualization (before obstacles so it shows under them)
-      const pathType = getAllyPathType();
-      if (pathType && !findObstacle(r, c) && !findPlayer(r, c) && !findAlly(r, c)) {
-        tile.classList.add(`ally-path-${pathType}`);
+
+      // Path visualization
+      const allyPathType = allyPathSet.get(key);
+      if (allyPathType && !findObstacle(r, c) && !findPlayer(r, c) && !findAlly(r, c)) {
+        tile.classList.add(`ally-path-${allyPathType}`);
       }
-      
+
       // Human player target path visualization
-      if (game.humanPlayer) {
-        const humanPath = game.players[game.humanPlayer].targetPath;
-        if (humanPath && humanPath.some(p => p.row === r && p.col === c)) {
-          tile.classList.add('player-path');
-        }
+      if (humanPathSet.has(key)) {
+        tile.classList.add('player-path');
       }
-      
+
       // Obstacles
       const obstacle = findObstacle(r, c);
       if (obstacle) {
         content = obstacle.type === 'wave' ? EMOJI.wave : EMOJI.bush;
-        extraClass = 'obstacle';
-      }
-      
-      // Totems
-      const totemKey = findTotem(r, c);
-      if (totemKey) {
-        content = totemKey === 'snake' ? EMOJI.snakeTotem : EMOJI.duckTotem;
-        extraClass = 'totem';
-      }
-      
-      // Allies - don't render in tiles, use sprites instead
-      // Just mark the tile
-      const ally = findAlly(r, c);
-      if (ally) {
-        extraClass = 'ally';
+        tile.classList.add('obstacle');
       }
 
-      // Players - don't render in tiles, use sprites instead
-      // Just mark the tile
-      const playerType = findPlayer(r, c);
-      if (playerType) {
-        extraClass = 'player';
-      }
-      
-      tile.innerHTML = content + badges;
-      if (extraClass) tile.classList.add(extraClass);
+      // Totems are now rendered as sprites, no need to show on tile
 
-      boardEl.appendChild(tile);
+      // Allies marker
+      if (findAlly(r, c)) {
+        tile.classList.add('ally');
+      }
+
+      // Players marker
+      if (findPlayer(r, c)) {
+        tile.classList.add('player');
+      }
+
+      // Update content only if changed
+      if (tile.textContent !== content) {
+        tile.textContent = content;
+      }
     }
   }
-  
+
   // Update player sprite positions
   updatePlayerSprites();
   // Update ally sprite positions
@@ -1318,6 +1546,40 @@ function updatePlayerSprites() {
   } else if (frogTotem) {
     frogTotem.remove();
   }
+
+  // Update totem sprites
+  updateTotemSprites(cellWidth, cellHeight, padding, gap);
+}
+
+// Update animated totem sprites
+function updateTotemSprites(cellWidth, cellHeight, padding, gap) {
+  const snakeTotem = game.totems.snake;
+  const snakeSprite = document.getElementById('snakeTotemSprite');
+
+  if (snakeTotem.pickedBy) {
+    snakeSprite.classList.add('hidden');
+  } else {
+    snakeSprite.classList.remove('hidden');
+    snakeSprite.style.width = cellWidth + 'px';
+    snakeSprite.style.height = cellHeight + 'px';
+    snakeSprite.style.fontSize = (cellHeight * 0.5) + 'px';
+    snakeSprite.style.left = (padding + snakeTotem.col * (cellWidth + gap)) + 'px';
+    snakeSprite.style.top = (padding + snakeTotem.row * (cellHeight + gap)) + 'px';
+  }
+
+  const duckTotem = game.totems.duck;
+  const duckTotemSprite = document.getElementById('duckTotemSprite');
+
+  if (duckTotem.pickedBy) {
+    duckTotemSprite.classList.add('hidden');
+  } else {
+    duckTotemSprite.classList.remove('hidden');
+    duckTotemSprite.style.width = cellWidth + 'px';
+    duckTotemSprite.style.height = cellHeight + 'px';
+    duckTotemSprite.style.fontSize = (cellHeight * 0.5) + 'px';
+    duckTotemSprite.style.left = (padding + duckTotem.col * (cellWidth + gap)) + 'px';
+    duckTotemSprite.style.top = (padding + duckTotem.row * (cellHeight + gap)) + 'px';
+  }
 }
 
 function updateHUD() {
@@ -1341,32 +1603,30 @@ function handleTileClick(r, c) {
   // Can't click on same tile
   if (player.row === r && player.col === c) return;
 
-  const dist = distance(player.row, player.col, r, c);
+  // Визначаємо чи клікнули на перешкоду
+  const clickedObstacle = findObstacle(r, c);
 
-  // Дозволяємо кліки на відстань 1-2 клітинки
-  if (dist >= 1 && dist <= 2) {
-    // Визначаємо чи клікнули на перешкоду
-    const clickedObstacle = findObstacle(r, c);
-
-    let path;
-    if (clickedObstacle) {
-      // Якщо клікнули на перешкоду - шлях може йти через перешкоди
+  let path;
+  if (clickedObstacle) {
+    // Якщо клікнули на перешкоду - шлях може йти через перешкоди
+    path = findPathForPlayer(player.row, player.col, r, c);
+  } else {
+    // Якщо клікнули на пусту клітину - спочатку шукаємо шлях без перешкод
+    path = findPath(player.row, player.col, r, c, false);
+    // Якщо не знайшли - спробуємо через перешкоди
+    if (!path || path.length === 0) {
       path = findPathForPlayer(player.row, player.col, r, c);
-    } else {
-      // Якщо клікнули на пусту клітину - спочатку шукаємо шлях без перешкод
-      path = findPath(player.row, player.col, r, c, false);
-      // Якщо не знайшли - спробуємо через перешкоди
-      if (!path || path.length === 0 || path.length > 2) {
-        path = findPathForPlayer(player.row, player.col, r, c);
-      }
     }
+  }
 
-    if (path && path.length > 0 && path.length <= 2) {
-      // Встановлюємо шлях
-      player.targetPath = path;
-      // Оновлюємо візуалізацію шляху
-      updatePathVisualization();
-    }
+  // Дозволяємо шлях від 1 до 5 клітинок
+  if (path && path.length > 0 && path.length <= 5) {
+    // Встановлюємо шлях
+    player.targetPath = path;
+    // Вібрація для підтвердження вибору
+    vibrate(30);
+    // Оновлюємо візуалізацію шляху
+    updatePathVisualization();
   }
 }
 
@@ -1475,13 +1735,45 @@ function moveAllies() {
     if (ally.row < 0) continue; // Skip already removed
 
     const player = game.players[ally.type];
+    const enemyType = ally.type === 'duck' ? 'frog' : 'duck';
+    const enemyPlayer = game.players[enemyType];
 
-    // If reached player (adjacent), add HP
+    // If reached own player (adjacent), add HP
     if (distance(ally.row, ally.col, player.row, player.col) <= 1) {
       player.hp++;
       ally.row = -100; // Mark for removal
       continue;
     }
+
+    // Перевіряємо чи ворожий гравець на сусідній клітинці - атакуємо!
+    if (distance(ally.row, ally.col, enemyPlayer.row, enemyPlayer.col) === 1) {
+      // Союзник атакує ворожого гравця - наносить 1 шкоду
+      if (enemyPlayer.hp > 1) {
+        enemyPlayer.hp--;
+        updateHUD();
+        updatePlayerSprites();
+      }
+      ally.row = -100; // Союзник гине після атаки
+      vibrate(100);
+      continue;
+    }
+
+    // Перевіряємо чи є ворожі союзники на сусідніх клітинках
+    let attackedEnemy = false;
+    for (const enemyAlly of game.allies) {
+      if (enemyAlly.row < 0 || enemyAlly.type === ally.type) continue;
+      if (distance(ally.row, ally.col, enemyAlly.row, enemyAlly.col) === 1) {
+        // Бій між союзниками на сусідніх клітинках - 50/50
+        if (Math.random() < 0.5) {
+          enemyAlly.row = -100; // Ворог гине
+        } else {
+          ally.row = -100; // Наш гине
+        }
+        attackedEnemy = true;
+        break;
+      }
+    }
+    if (attackedEnemy || ally.row < 0) continue;
 
     // Use BFS to find optimal path - allies CAN'T break obstacles (false parameter)
     // If path is blocked by obstacles, ally won't move
@@ -1503,8 +1795,9 @@ function moveAllies() {
         continue;
       }
 
-      // Check if next step is actually free (not blocked by own allies or obstacles)
-      if (!enemyAlly && !findObstacle(nextStep.row, nextStep.col)) {
+      // Check if next step is free from obstacles
+      // Свої союзники можуть бути на тій же клітинці (йдуть по одному шляху)
+      if (!findObstacle(nextStep.row, nextStep.col)) {
         // Store path for visualization
         game.allyPaths[i] = path;
         // Move to next step
@@ -1518,11 +1811,30 @@ function moveAllies() {
   game.allies = game.allies.filter(a => a.row >= 0);
 }
 
-// BFS pathfinding for players - can walk through own allies, obstacles (break them)
+// Dijkstra pathfinding for players - prefers paths with fewer obstacles
 function findPathForPlayer(fromR, fromC, toR, toC) {
+  const OBSTACLE_COST = 3; // Перешкода коштує 3, пуста клітинка - 1
+  const EMPTY_COST = 1;
+
+  const costs = {};
+  const prev = {};
   const visited = new Set();
-  const queue = [{ r: fromR, c: fromC, path: [] }];
-  visited.add(`${fromR},${fromC}`);
+  const key = (r, c) => `${r},${c}`;
+
+  // Priority queue з бінарною вставкою (відсортований масив)
+  const queue = [{ r: fromR, c: fromC, cost: 0 }];
+  costs[key(fromR, fromC)] = 0;
+
+  // Вставка в відсортований масив (бінарний пошук)
+  const insertSorted = (item) => {
+    let low = 0, high = queue.length;
+    while (low < high) {
+      const mid = (low + high) >>> 1;
+      if (queue[mid].cost < item.cost) low = mid + 1;
+      else high = mid;
+    }
+    queue.splice(low, 0, item);
+  };
 
   const directions = [
     { dr: -1, dc: 0 },  // up
@@ -1532,30 +1844,50 @@ function findPathForPlayer(fromR, fromC, toR, toC) {
   ];
 
   while (queue.length > 0) {
+    // Беремо елемент з найменшою вартістю (вже відсортовано)
     const current = queue.shift();
+    const currentKey = key(current.r, current.c);
 
-    // Found target
+    // Пропускаємо вже відвідані
+    if (visited.has(currentKey)) continue;
+    visited.add(currentKey);
+
+    // Found target - reconstruct path
     if (current.r === toR && current.c === toC) {
-      return current.path;
+      const path = [];
+      let k = currentKey;
+      while (prev[k]) {
+        const [r, c] = k.split(',').map(Number);
+        path.unshift({ row: r, col: c });
+        k = prev[k];
+      }
+      return path;
     }
 
     for (const dir of directions) {
       const nr = current.r + dir.dr;
       const nc = current.c + dir.dc;
-      const key = `${nr},${nc}`;
+      const nKey = key(nr, nc);
 
-      if (visited.has(key)) continue;
       if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
       if (isKingTile(nr, nc)) continue;
-      // Players can go through obstacles (they'll break them)
-      // Players can go through allies (they'll kill enemy or absorb own)
+      if (visited.has(nKey)) continue;
+
       // Can't walk through enemy player (except as target for combat)
       const playerOnTile = findPlayer(nr, nc);
       if (playerOnTile && !(nr === toR && nc === toC)) continue;
 
-      visited.add(key);
-      const newPath = [...current.path, { row: nr, col: nc }];
-      queue.push({ r: nr, c: nc, path: newPath });
+      // Визначаємо вартість клітинки
+      const hasObstacle = findObstacle(nr, nc);
+      const stepCost = hasObstacle ? OBSTACLE_COST : EMPTY_COST;
+      const newCost = current.cost + stepCost;
+
+      // Якщо знайшли дешевший шлях
+      if (costs[nKey] === undefined || newCost < costs[nKey]) {
+        costs[nKey] = newCost;
+        prev[nKey] = currentKey;
+        insertSorted({ r: nr, c: nc, cost: newCost });
+      }
     }
   }
 
@@ -1593,8 +1925,7 @@ function findPath(fromR, fromC, toR, toC, allowObstacles = true) {
       if (isKingTile(nr, nc)) continue;
       // Allow obstacles if flag is set (player can break them)
       if (!allowObstacles && findObstacle(nr, nc)) continue;
-      // Allies should avoid other allies (except target) to prevent blocking
-      if (!allowObstacles && findAlly(nr, nc) && !(nr === toR && nc === toC)) continue;
+      // Союзники можуть йти через клітинки з іншими союзниками (той же шлях)
       // Can't walk through players (except target)
       const playerOnTile = findPlayer(nr, nc);
       if (playerOnTile && !(nr === toR && nc === toC)) continue;
@@ -1617,23 +1948,287 @@ function findNextStep(fromR, fromC, toR, toC) {
 function gameWin(playerType) {
   game.gameOver = true;
   if (game.tickTimer) clearInterval(game.tickTimer);
-  
+  if (game.tickProgressTimer) cancelAnimationFrame(game.tickProgressTimer);
+
+  // Додаємо очко переможцю раунду
+  if (playerType === 'duck') {
+    game.match.duckWins++;
+  } else {
+    game.match.frogWins++;
+  }
+
+  updateMatchScore();
+
   const emoji = playerType === 'duck' ? '🐤' : '🐸';
   const name = playerType === 'duck' ? 'Каченя' : 'Жабка';
   const isHuman = playerType === game.humanPlayer;
-  
-  if (isHuman) {
-    document.getElementById('winnerText').textContent = `🏆 ${emoji} Перемога!`;
-    document.getElementById('winnerDesc').textContent = `Ти переміг! ${name} доставив тотем королю!`;
+
+  // Перевіряємо чи це фінальна перемога в матчі
+  if (game.match.duckWins >= WINS_NEEDED || game.match.frogWins >= WINS_NEEDED) {
+    // Фінальна перемога в матчі!
+    if (isHuman) {
+      document.getElementById('winnerText').textContent = `🏆 ${emoji} Перемога в матчі!`;
+      document.getElementById('winnerDesc').textContent = `${game.match.duckWins} : ${game.match.frogWins}`;
+    } else {
+      document.getElementById('winnerText').textContent = `😢 ${emoji} Програш`;
+      document.getElementById('winnerDesc').textContent = `${game.match.duckWins} : ${game.match.frogWins}`;
+    }
+    document.getElementById('winModal').classList.add('show');
   } else {
-    document.getElementById('winnerText').textContent = `😢 ${emoji} Програш`;
-    document.getElementById('winnerDesc').textContent = `AI переміг. ${name} доставив тотем королю.`;
+    // Ще не кінець матчу - показуємо модалку раунду і автоматично переходимо
+    game.match.round++;
+    document.getElementById('roundTitle').textContent = `Раунд ${game.match.round}`;
+    document.getElementById('roundScore').textContent = `🐤 ${game.match.duckWins} : ${game.match.frogWins} 🐸`;
+    document.getElementById('roundModal').classList.add('show');
+
+    // Автоматично починаємо наступний раунд через 1.5 секунди
+    setTimeout(() => {
+      startNextRound();
+    }, 1500);
   }
-  document.getElementById('winModal').classList.add('show');
+}
+
+function updateMatchScore() {
+  document.getElementById('duckWins').textContent = game.match.duckWins;
+  document.getElementById('frogWins').textContent = game.match.frogWins;
+  document.getElementById('roundNum').textContent = game.match.round;
+}
+
+function startNextRound() {
+  document.getElementById('roundModal').classList.remove('show');
+
+  // Скидаємо стан раунду (але не матчу!)
+  resetRound();
+
+  // Запускаємо зворотній відлік перед наступним раундом
+  startCountdown(() => {
+    game.gameStarted = true;
+    startGameTick();
+  });
+}
+
+function resetRound() {
+  game.tick = 0;
+  game.gameOver = false;
+  game.gameStarted = false;
+
+  // Очищуємо всі активні таймери
+  clearAllTimeouts();
+
+  // Скидаємо гравців (включно з властивостями сили)
+  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+  updateObstaclesCounter();
+
+  // Скидаємо тотеми
+  game.totems.snake = { row: 1, col: 1, owner: 'frog', pickedBy: null };
+  game.totems.duck = { row: 13, col: 7, owner: 'duck', pickedBy: null };
+
+  // Очищуємо союзників
+  game.allies = [];
+  game.allyPaths = {};
+  const allyContainer = document.getElementById('allySpritesContainer');
+  if (allyContainer) allyContainer.innerHTML = '';
+
+  // Перемішуємо перешкоди (не генеруємо нові!)
+  shuffleObstacles();
+
+  updateMatchScore();
+  render();
+  updateHUD();
+}
+
+function shuffleObstacles() {
+  // Розділяємо перешкоди по типах (wave = качка, bush = жаба)
+  const waveObstacles = game.obstacles.filter(o => o.type === 'wave');
+  const bushObstacles = game.obstacles.filter(o => o.type === 'bush');
+
+  // Збираємо валідні позиції для кожної території
+  const duckPositions = []; // для wave (качина територія)
+  const frogPositions = []; // для bush (жаб'яча територія)
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (isKingTile(r, c)) continue;
+      if (isKingZone(r, c)) continue;
+      if (isDivider(r, c)) continue;
+      if (r === 2 && c === 6) continue; // duck start
+      if (r === 12 && c === 2) continue; // frog start
+      if (r === 1 && c === 1) continue; // snake totem
+      if (r === 13 && c === 7) continue; // duck totem
+
+      const territory = getTerritory(r, c);
+      if (territory === 'duck') {
+        duckPositions.push({ row: r, col: c });
+      } else if (territory === 'frog') {
+        frogPositions.push({ row: r, col: c });
+      }
+    }
+  }
+
+  // Перемішуємо позиції окремо для кожної території
+  for (let i = duckPositions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [duckPositions[i], duckPositions[j]] = [duckPositions[j], duckPositions[i]];
+  }
+  for (let i = frogPositions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [frogPositions[i], frogPositions[j]] = [frogPositions[j], frogPositions[i]];
+  }
+
+  // Створюємо нові перешкоди на нових позиціях
+  game.obstacles = [];
+
+  // Wave (хвилі) - качина територія
+  for (let i = 0; i < waveObstacles.length && i < duckPositions.length; i++) {
+    game.obstacles.push({
+      row: duckPositions[i].row,
+      col: duckPositions[i].col,
+      type: 'wave'
+    });
+  }
+
+  // Bush (кущі) - жаб'яча територія
+  for (let i = 0; i < bushObstacles.length && i < frogPositions.length; i++) {
+    game.obstacles.push({
+      row: frogPositions[i].row,
+      col: frogPositions[i].col,
+      type: 'bush'
+    });
+  }
 }
 
 function closeModal() {
   document.getElementById('winModal').classList.remove('show');
+}
+
+// ============ POWERS (BUFFS/DEBUFFS) ============
+function updateObstaclesCounter() {
+  const counter = document.getElementById('obstaclesCounter');
+  if (!counter) return;
+
+  const player = game.players[game.humanPlayer];
+  if (!player) {
+    counter.textContent = `⚡ 0/${OBSTACLES_FOR_POWER}`;
+    enablePowerButtons(false);
+    return;
+  }
+
+  const destroyed = player.obstaclesDestroyed || 0;
+  const used = player.powersUsed || 0;
+  const count = destroyed % OBSTACLES_FOR_POWER;
+  const powersAvailable = Math.floor(destroyed / OBSTACLES_FOR_POWER) - used;
+
+  counter.textContent = `⚡ ${count}/${OBSTACLES_FOR_POWER}`;
+
+  // Якщо є доступні сили - підсвічуємо каунтер і активуємо кнопки
+  if (powersAvailable > 0) {
+    counter.classList.add('ready');
+    enablePowerButtons(true);
+  } else {
+    counter.classList.remove('ready');
+    enablePowerButtons(false);
+  }
+}
+
+function enablePowerButtons(enabled) {
+  document.getElementById('powerSpawnAlly').disabled = !enabled;
+  document.getElementById('powerDoubleMove').disabled = !enabled;
+  document.getElementById('powerKillAlly').disabled = !enabled;
+  document.getElementById('powerFreeze').disabled = !enabled;
+}
+
+function checkPowerReady(playerType) {
+  const player = game.players[playerType];
+  if (player.obstaclesDestroyed > 0 && player.obstaclesDestroyed % OBSTACLES_FOR_POWER === 0) {
+    // Гравець отримав нагороду!
+    if (playerType === game.humanPlayer) {
+      // Людина - активуємо кнопки
+      vibrate(200);
+      updateObstaclesCounter();
+    } else {
+      // AI - автоматичний вибір
+      aiSelectPower();
+    }
+  }
+}
+
+function usePower(power) {
+  const human = game.players[game.humanPlayer];
+  const ai = game.players[game.aiPlayer];
+
+  // Перевіряємо чи є доступні сили
+  const powersAvailable = Math.floor(human.obstaclesDestroyed / OBSTACLES_FOR_POWER) - (human.powersUsed || 0);
+  if (powersAvailable <= 0) return;
+
+  // Використовуємо силу
+  human.powersUsed = (human.powersUsed || 0) + 1;
+
+  switch (power) {
+    case 'spawnAlly':
+      spawnAlly(game.humanPlayer);
+      break;
+
+    case 'doubleMove':
+      human.doubleMove = true;
+      break;
+
+    case 'killAlly':
+      const enemyAllies = game.allies.filter(a => a.type === game.aiPlayer && a.row >= 0);
+      if (enemyAllies.length > 0) {
+        enemyAllies.sort((a, b) =>
+          distance(a.row, a.col, ai.row, ai.col) - distance(b.row, b.col, ai.row, ai.col)
+        );
+        enemyAllies[0].row = -100;
+        game.allies = game.allies.filter(a => a.row >= 0);
+      }
+      break;
+
+    case 'freeze':
+      ai.frozen = true;
+      break;
+  }
+
+  vibrate(100);
+  updateObstaclesCounter();
+  render();
+  updateHUD();
+  updateAllySprites();
+}
+
+function aiSelectPower() {
+  const human = game.players[game.humanPlayer];
+  const ai = game.players[game.aiPlayer];
+
+  // AI логіка вибору сили
+  const humanAllies = game.allies.filter(a => a.type === game.humanPlayer && a.row >= 0);
+  const aiAllies = game.allies.filter(a => a.type === game.aiPlayer && a.row >= 0);
+
+  // Якщо у людини є союзники і AI слабший - вбити союзника
+  if (humanAllies.length > 0 && ai.hp <= human.hp) {
+    // Знищити найближчого до гравця союзника
+    humanAllies.sort((a, b) =>
+      distance(a.row, a.col, human.row, human.col) - distance(b.row, b.col, human.row, human.col)
+    );
+    humanAllies[0].row = -100;
+    game.allies = game.allies.filter(a => a.row >= 0);
+    return;
+  }
+
+  // Якщо людина має тотем - заморозити
+  if (human.hasTotem) {
+    human.frozen = true;
+    return;
+  }
+
+  // Якщо AI має тотем - прискорення
+  if (ai.hasTotem) {
+    ai.doubleMove = true;
+    return;
+  }
+
+  // Інакше - спавн союзника
+  spawnAlly(game.aiPlayer);
 }
 
 function resetGame() {
@@ -1653,16 +2248,56 @@ function resetGame() {
 function selectCharacter(character) {
   game.humanPlayer = character;
   game.aiPlayer = character === 'duck' ? 'frog' : 'duck';
-  game.gameStarted = true;
 
   // Show game screen
   showScreen('gameScreen');
 
-  // Start the game tick
-  startGameTick();
+  // Оновлюємо рахунок матчу та каунтер сил
+  updateMatchScore();
+  updateObstaclesCounter();
 
   render();
   updateHUD();
+
+  // Запускаємо зворотній відлік перед початком гри
+  startCountdown(() => {
+    game.gameStarted = true;
+    startGameTick();
+  });
+}
+
+function startCountdown(callback) {
+  const tickNumber = document.getElementById('tickNumber');
+  const tickRing = document.getElementById('tickRing');
+  const RING_CIRCUMFERENCE = 97.39;
+  let count = 3;
+
+  function showNumber() {
+    tickNumber.textContent = count;
+
+    // Анімація кільця - заповнюється за 1 секунду
+    tickRing.style.transition = 'none';
+    tickRing.style.strokeDashoffset = RING_CIRCUMFERENCE;
+
+    requestAnimationFrame(() => {
+      tickRing.style.transition = 'stroke-dashoffset 1s linear';
+      tickRing.style.strokeDashoffset = 0;
+    });
+
+    vibrate(50);
+
+    if (count > 0) {
+      count--;
+      setTimeout(showNumber, 1000);
+    } else {
+      // Відлік завершено
+      vibrate(100);
+      tickNumber.textContent = '0';
+      if (callback) callback();
+    }
+  }
+
+  showNumber();
 }
 
 function startGameTick() {
@@ -1712,24 +2347,48 @@ function updateTickProgress() {
 
 function gameTick() {
   game.tick++;
-  
+
   // Spawn allies every 4 ticks
   if (game.tick % ALLY_SPAWN_TICKS === 0) {
     spawnAlly('duck');
     spawnAlly('frog');
   }
-  
+
   // Move allies
   moveAllies();
-  
+
   // Move human player one step if has path
   if (game.humanPlayer) {
-    movePlayerOneStep(game.humanPlayer);
+    const human = game.players[game.humanPlayer];
+
+    // Перевірка на фріз
+    if (human.frozen) {
+      human.frozen = false; // Скидаємо фріз після пропуску
+    } else {
+      movePlayerOneStep(game.humanPlayer);
+
+      // Подвійний хід - робимо другий крок
+      if (human.doubleMove) {
+        movePlayerOneStep(game.humanPlayer);
+        human.doubleMove = false; // Скидаємо після використання
+      }
+    }
   }
-  
+
   // AI makes one step
-  aiMove();
-  
+  const ai = game.players[game.aiPlayer];
+  if (ai.frozen) {
+    ai.frozen = false; // Скидаємо фріз після пропуску
+  } else {
+    aiMove();
+
+    // AI подвійний хід
+    if (ai.doubleMove) {
+      aiMove();
+      ai.doubleMove = false;
+    }
+  }
+
   render();
   updateHUD();
 }
@@ -1765,7 +2424,7 @@ function movePlayerOneStep(playerType) {
       }
       updateHUD();
       updatePlayerSprites();
-      setTimeout(() => {
+      safeTimeout(() => {
         game.allies = game.allies.filter(a => a !== ally);
         render();
       }, 250);
@@ -1780,7 +2439,7 @@ function movePlayerOneStep(playerType) {
     game.allies = game.allies.filter(a => a !== ally);
     // Continue moving - don't return, let the move happen below
   }
-  
+
   // Break obstacle
   if (obstacle) {
     if (player.hp > 1) {
@@ -1792,11 +2451,24 @@ function movePlayerOneStep(playerType) {
       }
       updateHUD();
       updatePlayerSprites(); // Update sprite HP badge
-      // Remove obstacle after animation
-      setTimeout(() => {
+      // Remove obstacle after animation, then update counter
+      safeTimeout(() => {
         game.obstacles = game.obstacles.filter(o => o !== obstacle);
+
+        // Збільшуємо лічильник після анімації
+        player.obstaclesDestroyed++;
+        updateObstaclesCounter();
+
+        // Перевіряємо чи готова сила
+        if (player.obstaclesDestroyed > 0 && player.obstaclesDestroyed % OBSTACLES_FOR_POWER === 0) {
+          checkPowerReady(playerType);
+        }
+
         render();
       }, 250);
+
+      // Ламання - це дія, але шлях залишається для наступного ходу
+      // НЕ очищуємо шлях, просто виходимо
     } else {
       // Show can't break feedback
       const obstacleTile = document.querySelector(`.tile[data-row="${nextStep.row}"][data-col="${nextStep.col}"]`);
@@ -1804,8 +2476,9 @@ function movePlayerOneStep(playerType) {
         obstacleTile.classList.add('cant-break');
         setTimeout(() => obstacleTile.classList.remove('cant-break'), 300);
       }
+      // Не можемо зламати - очищуємо шлях
+      player.targetPath = [];
     }
-    player.targetPath = []; // Clear path after action
     return;
   }
   
@@ -1978,10 +2651,11 @@ function planAIPath(tactic) {
       if (totem.pickedBy === null) {
         targetR = totem.row;
         targetC = totem.col;
-        // Якщо ворог ближче до тотему - йти агресивніше (через перешкоди)
+        // Якщо AI далі від тотему ніж ворог - йти обережніше (уникати перешкод)
+        // Якщо AI ближче - може йти напролом через перешкоди
         const aiDistToTotem = distance(ai.row, ai.col, totem.row, totem.col);
         const humanDistToTotem = distance(human.row, human.col, totem.row, totem.col);
-        avoidObstacles = aiDistToTotem < humanDistToTotem;
+        avoidObstacles = aiDistToTotem > humanDistToTotem;
       }
       break;
     }
@@ -2176,38 +2850,6 @@ function showScreen(screenId) {
   document.getElementById(screenId).classList.add('active');
 }
 
-// ============ TUTORIAL ============
-let currentSlide = 0;
-const totalSlides = 4;
-
-function goToSlide(index) {
-  currentSlide = index;
-  document.querySelectorAll('.tutorial-slide').forEach((slide, i) => {
-    slide.classList.toggle('active', i === index);
-  });
-  document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === index);
-  });
-  // Update buttons
-  document.getElementById('tutorialPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
-  document.getElementById('tutorialNext').textContent = index === totalSlides - 1 ? 'Готово ✓' : 'Далі →';
-}
-
-function nextSlide() {
-  if (currentSlide < totalSlides - 1) {
-    goToSlide(currentSlide + 1);
-  } else {
-    showScreen('menuScreen');
-    goToSlide(0);
-  }
-}
-
-function prevSlide() {
-  if (currentSlide > 0) {
-    goToSlide(currentSlide - 1);
-  }
-}
-
 // ============ GAME CONTROLS ============
 function pauseGame() {
   if (game.tickTimer) {
@@ -2251,28 +2893,63 @@ function vibrate(pattern) {
 loadSettings();
 initGame();
 
-// Event delegation for board clicks - завжди використовуємо координати для надійності
-document.getElementById('board').addEventListener('click', (e) => {
+// Універсальна функція обробки кліку/тачу на дошці
+function handleBoardInteraction(clientX, clientY) {
   const board = document.getElementById('board');
   const boardRect = board.getBoundingClientRect();
   const padding = 8; // board padding
+  const gap = 3; // gap між клітинками
 
-  // Розраховуємо позицію кліку відносно дошки
-  const x = e.clientX - boardRect.left - padding;
-  const y = e.clientY - boardRect.top - padding;
+  // Внутрішня область дошки (без padding)
+  const innerWidth = boardRect.width - padding * 2;
+  const innerHeight = boardRect.height - padding * 2;
 
-  // Розмір клітинки з gap
-  const cellWidth = (boardRect.width - padding * 2) / COLS;
-  const cellHeight = (boardRect.height - padding * 2) / ROWS;
+  // Розраховуємо позицію кліку відносно внутрішньої області
+  const x = clientX - boardRect.left - padding;
+  const y = clientY - boardRect.top - padding;
 
-  // Визначаємо row і col
-  const col = Math.floor(x / cellWidth);
-  const row = Math.floor(y / cellHeight);
+  // Перевірка чи клік всередині дошки
+  if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return;
+
+  // Розмір клітинки з урахуванням gap
+  // Загальна ширина = COLS * cellWidth + (COLS - 1) * gap
+  const cellWidth = (innerWidth - (COLS - 1) * gap) / COLS;
+  const cellHeight = (innerHeight - (ROWS - 1) * gap) / ROWS;
+
+  // Розмір однієї "комірки" (клітинка + gap)
+  const cellPlusGapWidth = cellWidth + gap;
+  const cellPlusGapHeight = cellHeight + gap;
+
+  // Визначаємо col і row
+  const col = Math.floor(x / cellPlusGapWidth);
+  const row = Math.floor(y / cellPlusGapHeight);
 
   // Перевіряємо межі
   if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
     handleTileClick(row, col);
   }
+}
+
+// Event delegation for board clicks
+document.getElementById('board').addEventListener('click', (e) => {
+  handleBoardInteraction(e.clientX, e.clientY);
+});
+
+// Touch events для мобільних - швидша відповідь
+let touchHandled = false;
+document.getElementById('board').addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    const touch = e.touches[0];
+    handleBoardInteraction(touch.clientX, touch.clientY);
+    touchHandled = true;
+    // Запобігаємо подвійному спрацюванню (touch + click)
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.getElementById('board').addEventListener('touchend', () => {
+  // Скидаємо флаг після завершення тачу
+  setTimeout(() => { touchHandled = false; }, 100);
 });
 
 // Cleanup on page unload
