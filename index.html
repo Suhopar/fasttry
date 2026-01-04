@@ -734,9 +734,9 @@
 
     /* Game Screen - все щільно один під одним */
     #gameScreen {
-      padding: 0;
+      padding: 8px 0;
       justify-content: flex-start;
-      gap: 0;
+      gap: 8px;
     }
     .match-score-bar {
       flex-shrink: 0;
@@ -750,6 +750,9 @@
     .game-bottom {
       flex-shrink: 0;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .game-panel {
       display: flex;
