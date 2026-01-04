@@ -903,10 +903,30 @@
       box-shadow:
         inset 2px 2px 4px var(--shadow-d),
         inset -2px -2px 4px var(--shadow-l);
+      position: relative;
     }
     .power-counter.ready {
       animation: pulse-glow 1s infinite;
       color: #f39c12;
+    }
+    .power-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      min-width: 18px;
+      height: 18px;
+      background: #e74c3c;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .power-badge.hidden {
+      display: none;
     }
     .power-btn-small {
       width: 40px;
@@ -1077,7 +1097,7 @@
   <div class="game-bottom">
     <!-- Каунтер + кнопки сил -->
     <div class="powers-bar">
-      <span class="power-counter" id="obstaclesCounter">⚡ 0/5</span>
+      <span class="power-counter" id="obstaclesCounter">⚡ 0/3<span class="power-badge hidden" id="powerBadge">0</span></span>
       <button class="power-btn-small" id="powerSpawnAlly" onclick="usePower('spawnAlly')" disabled>🐣</button>
       <button class="power-btn-small" id="powerDoubleMove" onclick="usePower('doubleMove')" disabled>⚡</button>
       <button class="power-btn-small" id="powerKillAlly" onclick="usePower('killAlly')" disabled>💀</button>
@@ -1154,7 +1174,7 @@ const EMOJI = {
 
 // ============ GAME STATE ============
 const WINS_NEEDED = 3; // BO5 = до 3 перемог
-const OBSTACLES_FOR_POWER = 5; // Скільки перешкод потрібно зруйнувати для нагороди
+const OBSTACLES_FOR_POWER = 3; // Скільки перешкод потрібно зруйнувати для нагороди
 
 let game = {
   tick: 0,
@@ -1171,8 +1191,8 @@ let game = {
   },
 
   players: {
-    duck: { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 },
-    frog: { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 }
+    duck: { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 },
+    frog: { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 }
   },
 
   totems: {
@@ -1291,8 +1311,8 @@ function initGame() {
   };
 
   // Reset players
-  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
-  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 };
+  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 };
 
   // Reset totems
   game.totems.snake = { row: 1, col: 1, owner: 'frog', pickedBy: null };
@@ -2117,8 +2137,8 @@ function resetRound() {
   clearAllTimeouts();
 
   // Скидаємо гравців (включно з властивостями сили)
-  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
-  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: false, frozen: false, powersUsed: 0 };
+  game.players.duck = { row: 2, col: 6, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 };
+  game.players.frog = { row: 12, col: 2, hp: 1, hasTotem: false, targetPath: [], obstaclesDestroyed: 0, doubleMove: 0, frozen: 0, powersUsed: 0 };
   updateObstaclesCounter();
 
   // Скидаємо тотеми
@@ -2206,11 +2226,15 @@ function closeModal() {
 // ============ POWERS (BUFFS/DEBUFFS) ============
 function updateObstaclesCounter() {
   const counter = document.getElementById('obstaclesCounter');
+  const badge = document.getElementById('powerBadge');
   if (!counter) return;
 
   const player = game.players[game.humanPlayer];
   if (!player) {
-    counter.textContent = `⚡ 0/${OBSTACLES_FOR_POWER}`;
+    counter.childNodes[0].textContent = `⚡ 0/${OBSTACLES_FOR_POWER}`;
+    if (badge) {
+      badge.classList.add('hidden');
+    }
     enablePowerButtons(false);
     return;
   }
@@ -2220,7 +2244,17 @@ function updateObstaclesCounter() {
   const count = destroyed % OBSTACLES_FOR_POWER;
   const powersAvailable = Math.floor(destroyed / OBSTACLES_FOR_POWER) - used;
 
-  counter.textContent = `⚡ ${count}/${OBSTACLES_FOR_POWER}`;
+  counter.childNodes[0].textContent = `⚡ ${count}/${OBSTACLES_FOR_POWER}`;
+
+  // Оновлюємо бейдж з кількістю доступних сил
+  if (badge) {
+    if (powersAvailable > 0) {
+      badge.textContent = powersAvailable;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
 
   // Якщо є доступні сили - підсвічуємо каунтер і активуємо кнопки
   if (powersAvailable > 0) {
@@ -2271,7 +2305,7 @@ function usePower(power) {
       break;
 
     case 'doubleMove':
-      human.doubleMove = true;
+      human.doubleMove = 2; // 2 тіки подвійного ходу
       break;
 
     case 'killAlly':
@@ -2286,7 +2320,7 @@ function usePower(power) {
       break;
 
     case 'freeze':
-      ai.frozen = true;
+      ai.frozen = 2; // 2 тіки заморозки
       break;
   }
 
@@ -2318,13 +2352,13 @@ function aiSelectPower() {
 
   // Якщо людина має тотем - заморозити
   if (human.hasTotem) {
-    human.frozen = true;
+    human.frozen = 2; // 2 тіки заморозки
     return;
   }
 
   // Якщо AI має тотем - прискорення
   if (ai.hasTotem) {
-    ai.doubleMove = true;
+    ai.doubleMove = 2; // 2 тіки подвійного ходу
     return;
   }
 
@@ -2463,30 +2497,30 @@ function gameTick() {
     const human = game.players[game.humanPlayer];
 
     // Перевірка на фріз
-    if (human.frozen) {
-      human.frozen = false; // Скидаємо фріз після пропуску
+    if (human.frozen > 0) {
+      human.frozen--; // Зменшуємо лічильник фрізу
     } else {
       movePlayerOneStep(game.humanPlayer);
 
       // Подвійний хід - робимо другий крок
-      if (human.doubleMove) {
+      if (human.doubleMove > 0) {
         movePlayerOneStep(game.humanPlayer);
-        human.doubleMove = false; // Скидаємо після використання
+        human.doubleMove--; // Зменшуємо лічильник
       }
     }
   }
 
   // AI makes one step
   const ai = game.players[game.aiPlayer];
-  if (ai.frozen) {
-    ai.frozen = false; // Скидаємо фріз після пропуску
+  if (ai.frozen > 0) {
+    ai.frozen--; // Зменшуємо лічильник фрізу
   } else {
     aiMove();
 
     // AI подвійний хід
-    if (ai.doubleMove) {
+    if (ai.doubleMove > 0) {
       aiMove();
-      ai.doubleMove = false;
+      ai.doubleMove--; // Зменшуємо лічильник
     }
   }
 
