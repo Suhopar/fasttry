@@ -503,8 +503,8 @@
         0 0 0 3px var(--frog-color);
     }
     .select-icon {
-      width: 120px;
-      height: 120px;
+      width: min(120px, 20vh);
+      height: min(120px, 20vh);
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
@@ -516,9 +516,16 @@
       background-image: url('frog-king.png');
     }
     .select-name {
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 2vh, 1.1rem);
       font-weight: 600;
       color: #333;
+    }
+    .select-btn {
+      padding: clamp(12px, 3vh, 25px) clamp(20px, 4vh, 35px);
+    }
+    .char-select-title {
+      font-size: clamp(1rem, 3vh, 1.4rem);
+      margin-top: clamp(10px, 2vh, 20px);
     }
 
     /* Mobile adaptation for character select */
@@ -526,49 +533,12 @@
       .select-buttons {
         gap: 12px;
       }
-      .select-btn {
-        padding: 18px 25px;
-      }
       .select-icon {
-        width: 90px;
-        height: 90px;
-      }
-      .select-name {
-        font-size: 1rem;
+        width: min(90px, 18vh);
+        height: min(90px, 18vh);
       }
     }
-    @media (max-height: 600px) {
-      .select-icon {
-        width: 80px;
-        height: 80px;
-      }
-      .select-btn {
-        padding: 15px 20px;
-        gap: 8px;
-      }
-      .char-select-title {
-        font-size: 1.2rem;
-        margin-top: 15px;
-      }
-    }
-    @media (max-height: 500px) {
-      .select-icon {
-        width: 60px;
-        height: 60px;
-      }
-      .select-btn {
-        padding: 12px 16px;
-        gap: 6px;
-      }
-      .select-name {
-        font-size: 0.9rem;
-      }
-      .char-select-title {
-        font-size: 1rem;
-        margin-top: 10px;
-      }
-    }
-    
+
     /* AI indicator */
     .player-info.ai::after {
       content: '🤖';
