@@ -546,6 +546,27 @@
         padding: 15px 20px;
         gap: 8px;
       }
+      .char-select-title {
+        font-size: 1.2rem;
+        margin-top: 15px;
+      }
+    }
+    @media (max-height: 500px) {
+      .select-icon {
+        width: 60px;
+        height: 60px;
+      }
+      .select-btn {
+        padding: 12px 16px;
+        gap: 6px;
+      }
+      .select-name {
+        font-size: 0.9rem;
+      }
+      .char-select-title {
+        font-size: 1rem;
+        margin-top: 10px;
+      }
     }
     
     /* AI indicator */
@@ -565,9 +586,16 @@
       justify-content: center;
       padding: 20px;
       z-index: 50;
-      overflow: hidden;
+      overflow-y: auto;
     }
     .screen.active { display: flex; }
+
+    /* Select screen specific - ensure content fits */
+    #selectScreen {
+      justify-content: safe center;
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
 
     /* Main Menu */
     .menu-logo {
