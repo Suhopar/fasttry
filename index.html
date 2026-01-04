@@ -1672,7 +1672,16 @@ function updatePlayerSprites() {
   duckSprite.style.left = (padding + duckDisplay.col * (cellWidth + gap)) + 'px';
   duckSprite.style.top = (padding + duckDisplay.row * (cellHeight + gap)) + 'px';
   document.getElementById('duckSpriteBadge').textContent = duck.hp;
-  
+
+  // Update duck sprite image based on state
+  if (duck.frozen > 0) {
+    duckSprite.style.backgroundImage = "url('duck-player-freeze.png')";
+  } else if (duck.doubleMove > 0) {
+    duckSprite.style.backgroundImage = "url('duck-player-wing.png')";
+  } else {
+    duckSprite.style.backgroundImage = "url('duck-player.png')";
+  }
+
   // Update totem indicator (duck carries duck totem)
   let duckTotemInd = duckSprite.querySelector('.totem-indicator');
   if (duck.hasTotem) {
@@ -1694,6 +1703,15 @@ function updatePlayerSprites() {
   frogSprite.style.left = (padding + frogDisplay.col * (cellWidth + gap)) + 'px';
   frogSprite.style.top = (padding + frogDisplay.row * (cellHeight + gap)) + 'px';
   document.getElementById('frogSpriteBadge').textContent = frog.hp;
+
+  // Update frog sprite image based on state
+  if (frog.frozen > 0) {
+    frogSprite.style.backgroundImage = "url('frog-player-freeze.png')";
+  } else if (frog.doubleMove > 0) {
+    frogSprite.style.backgroundImage = "url('frog-player-wing.png')";
+  } else {
+    frogSprite.style.backgroundImage = "url('frog-player.png')";
+  }
 
   // Update totem indicator (frog carries frog/snake totem)
   let frogTotemInd = frogSprite.querySelector('.totem-indicator');
@@ -2429,6 +2447,13 @@ function aiSelectPower() {
   const human = game.players[game.humanPlayer];
   const ai = game.players[game.aiPlayer];
 
+  // Перевіряємо чи AI має доступні сили
+  const powersAvailable = Math.floor(ai.obstaclesDestroyed / OBSTACLES_FOR_POWER) - (ai.powersUsed || 0);
+  if (powersAvailable <= 0) return;
+
+  // Використовуємо силу
+  ai.powersUsed = (ai.powersUsed || 0) + 1;
+
   // AI логіка вибору сили
   const humanAllies = game.allies.filter(a => a.type === game.humanPlayer && a.row >= 0);
   const aiAllies = game.allies.filter(a => a.type === game.aiPlayer && a.row >= 0);
@@ -2441,6 +2466,8 @@ function aiSelectPower() {
     );
     humanAllies[0].row = -100;
     game.allies = game.allies.filter(a => a.row >= 0);
+    render();
+    updateAllySprites();
     return;
   }
 
@@ -2458,6 +2485,8 @@ function aiSelectPower() {
 
   // Інакше - спавн союзника
   spawnAlly(game.aiPlayer);
+  render();
+  updateAllySprites();
 }
 
 function resetGame() {
