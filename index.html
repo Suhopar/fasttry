@@ -137,16 +137,33 @@
       grid-column: 8 / 10;
       grid-row: 1 / 3;
       border: 3px solid var(--duck-color);
+      background-image: url('duck-king.png');
+      background-size: 85%;
+      background-position: center;
+      background-repeat: no-repeat;
     }
     .tile.frog-king {
       grid-column: 1 / 3;
       grid-row: 14 / 16;
       border: 3px solid var(--frog-color);
+      background-image: url('frog-king.png');
+      background-size: 85%;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     /* Game objects */
     .tile.obstacle {
-      background: rgba(200, 200, 200, 0.5);
+      background-color: rgba(200, 200, 200, 0.3);
+      background-size: 95%;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .tile.obstacle.wave {
+      background-image: url('duck-obstacle.png');
+    }
+    .tile.obstacle.bush {
+      background-image: url('frog-obstacle.png');
     }
     .tile.obstacle.breaking {
       animation: obstacle-break 0.3s ease-out;
@@ -176,18 +193,24 @@
     /* Animated player sprites */
     .player-sprite {
       position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       border-radius: 6px;
       background: var(--bg);
+      background-size: 90%;
+      background-position: center;
+      background-repeat: no-repeat;
       z-index: 20;
       pointer-events: none;
       transition: left 0.3s ease-out, top 0.3s ease-out;
-      box-shadow: 
+      box-shadow:
         3px 3px 6px var(--shadow-d),
         -3px -3px 6px var(--shadow-l),
         0 0 0 2px rgba(100, 150, 255, 0.5);
+    }
+    #duckSprite {
+      background-image: url('duck-player.png');
+    }
+    #frogSprite {
+      background-image: url('frog-player.png');
     }
     .player-sprite .hp-badge {
       position: absolute;
@@ -209,11 +232,20 @@
       position: absolute;
       top: -5px;
       right: -5px;
-      font-size: 0.6rem;
+      width: 18px;
+      height: 18px;
       background: white;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
       border-radius: 50%;
-      padding: 2px;
       box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    .player-sprite .totem-indicator.duck-totem-ind {
+      background-image: url('duck-totem.png');
+    }
+    .player-sprite .totem-indicator.frog-totem-ind {
+      background-image: url('frog-totem.png');
     }
     
     .tile.ally {
@@ -227,23 +259,24 @@
     /* Animated ally sprites */
     .ally-sprite {
       position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       border-radius: 5px;
       background: var(--bg);
+      background-size: 90%;
+      background-position: center;
+      background-repeat: no-repeat;
       z-index: 15;
       pointer-events: none;
       transition: left 0.3s ease-out, top 0.3s ease-out, opacity 0.2s;
-      font-size: 0.7rem;
       box-shadow:
         2px 2px 4px var(--shadow-d),
         -2px -2px 4px var(--shadow-l);
     }
     .ally-sprite.duck-ally {
+      background-image: url('duck-player.png');
       border: 1px solid var(--duck-color);
     }
     .ally-sprite.frog-ally {
+      background-image: url('frog-player.png');
       border: 1px solid var(--frog-color);
     }
     .ally-sprite.dying {
@@ -281,16 +314,16 @@
     /* Totem sprites - similar to player sprites but smaller */
     .totem-sprite {
       position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       border-radius: 5px;
       background: var(--bg);
+      background-size: 90%;
+      background-position: center;
+      background-repeat: no-repeat;
       z-index: 18;
       pointer-events: none;
-      font-size: 0.85rem;
     }
     .totem-sprite.snake-totem {
+      background-image: url('frog-totem.png');
       border: 2px solid var(--frog-color);
       box-shadow:
         2px 2px 4px var(--shadow-d),
@@ -299,6 +332,7 @@
       animation: totem-pulse-frog 2s ease-in-out infinite;
     }
     .totem-sprite.duck-totem {
+      background-image: url('duck-totem.png');
       border: 2px solid var(--duck-color);
       box-shadow:
         2px 2px 4px var(--shadow-d),
@@ -434,7 +468,7 @@
       justify-content: center;
     }
     .select-btn {
-      padding: 20px 30px;
+      padding: 25px 35px;
       border: none;
       border-radius: 16px;
       background: var(--bg);
@@ -442,7 +476,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       box-shadow:
         6px 6px 12px var(--shadow-d),
         -6px -6px 12px var(--shadow-l);
@@ -452,27 +486,37 @@
       transform: scale(1.05);
     }
     .select-btn:active {
-      box-shadow: 
+      box-shadow:
         inset 4px 4px 8px var(--shadow-d),
         inset -4px -4px 8px var(--shadow-l);
     }
     .select-btn.duck-select:hover {
-      box-shadow: 
+      box-shadow:
         6px 6px 12px var(--shadow-d),
         -6px -6px 12px var(--shadow-l),
         0 0 0 3px var(--duck-color);
     }
     .select-btn.frog-select:hover {
-      box-shadow: 
+      box-shadow:
         6px 6px 12px var(--shadow-d),
         -6px -6px 12px var(--shadow-l),
         0 0 0 3px var(--frog-color);
     }
     .select-icon {
-      font-size: 3rem;
+      width: 120px;
+      height: 120px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .duck-select .select-icon {
+      background-image: url('duck-king.png');
+    }
+    .frog-select .select-icon {
+      background-image: url('frog-king.png');
     }
     .select-name {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 600;
       color: #333;
     }
@@ -499,14 +543,16 @@
     .screen.active { display: flex; }
 
     /* Main Menu */
-    .menu-title {
-      font-size: 3rem;
-      margin-bottom: 10px;
-    }
-    .menu-subtitle {
-      font-size: 1.2rem;
-      color: #666;
-      margin-bottom: 40px;
+    .menu-logo {
+      width: 260px;
+      height: auto;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      background: var(--bg);
+      padding: 15px;
+      box-shadow:
+        6px 6px 12px var(--shadow-d),
+        -6px -6px 12px var(--shadow-l);
     }
     .menu-buttons {
       display: flex;
@@ -610,7 +656,7 @@
       left: 25px;
     }
     .back-btn {
-      margin-bottom: 12px;
+      margin-top: 20px;
     }
 
     /* Tutorial Screen */
@@ -746,10 +792,16 @@
       color: #555;
     }
 
-    /* Character Select Modal - оновлений */
+    /* Character Select Screen */
+    .select-container {
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
     .char-select-title {
-      font-size: 1.3rem;
-      margin-bottom: 20px;
+      font-size: 1.4rem;
+      margin-top: 20px;
+      margin-bottom: 0;
     }
 
     /* Match Score Bar - тонкий рядок над полем */
@@ -849,8 +901,7 @@
 
 <!-- ============ MAIN MENU SCREEN ============ -->
 <div class="screen active" id="menuScreen">
-  <div class="menu-title">🐤 vs 🐸</div>
-  <div class="menu-subtitle">Качка проти Жабки</div>
+  <img src="duck-vs-frog.png" alt="Duck vs Frog" class="menu-logo">
   <div class="menu-buttons">
     <button class="menu-btn primary" onclick="showScreen('selectScreen')">Грати з ботом</button>
     <button class="menu-btn" onclick="alert('Скоро буде!')">Грати з другом</button>
@@ -861,18 +912,20 @@
 
 <!-- ============ CHARACTER SELECT SCREEN ============ -->
 <div class="screen" id="selectScreen">
-  <h2 class="char-select-title" id="selectTitle">🎮 Обери персонажа</h2>
-  <div class="select-buttons">
-    <button class="select-btn duck-select" onclick="selectCharacter('duck')">
-      <span class="select-icon">🐤</span>
-      <span class="select-name">Каченя</span>
-    </button>
-    <button class="select-btn frog-select" onclick="selectCharacter('frog')">
-      <span class="select-icon">🐸</span>
-      <span class="select-name">Жабка</span>
-    </button>
+  <div class="select-container">
+    <div class="select-buttons">
+      <button class="select-btn duck-select" onclick="selectCharacter('duck')">
+        <span class="select-icon"></span>
+        <span class="select-name">Каченя</span>
+      </button>
+      <button class="select-btn frog-select" onclick="selectCharacter('frog')">
+        <span class="select-icon"></span>
+        <span class="select-name">Жабка</span>
+      </button>
+    </div>
+    <h2 class="char-select-title" id="selectTitle">Обери персонажа</h2>
+    <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
   </div>
-  <button class="btn back-btn" onclick="showScreen('menuScreen')">← Назад</button>
 </div>
 
 <!-- ============ SETTINGS SCREEN ============ -->
@@ -957,10 +1010,10 @@
     <div class="board-container">
       <div class="board" id="board"></div>
       <div id="allySpritesContainer"></div>
-      <div class="totem-sprite snake-totem" id="snakeTotemSprite">🐍</div>
-      <div class="totem-sprite duck-totem" id="duckTotemSprite">🦆</div>
-      <div class="player-sprite" id="duckSprite">🐥<span class="hp-badge" id="duckSpriteBadge">1</span></div>
-      <div class="player-sprite" id="frogSprite">🐸<span class="hp-badge" id="frogSpriteBadge">1</span></div>
+      <div class="totem-sprite snake-totem" id="snakeTotemSprite"></div>
+      <div class="totem-sprite duck-totem" id="duckTotemSprite"></div>
+      <div class="player-sprite" id="duckSprite"><span class="hp-badge" id="duckSpriteBadge">1</span></div>
+      <div class="player-sprite" id="frogSprite"><span class="hp-badge" id="frogSpriteBadge">1</span></div>
     </div>
   </div>
 
@@ -1306,15 +1359,13 @@ function initBoard() {
   boardEl.innerHTML = '';
   tileCache.clear();
 
-  // Kings first
+  // Kings first (images via CSS background)
   const duckKing = document.createElement('div');
   duckKing.className = 'tile king duck-king';
-  duckKing.textContent = EMOJI.duckKing;
   boardEl.appendChild(duckKing);
 
   const frogKing = document.createElement('div');
   frogKing.className = 'tile king frog-king';
-  frogKing.textContent = EMOJI.frogKing;
   boardEl.appendChild(frogKing);
 
   // Create all tiles once
@@ -1386,7 +1437,7 @@ function render() {
       if (!tile) continue;
 
       // Reset dynamic classes
-      tile.classList.remove('ally-path-duck', 'ally-path-frog', 'player-path', 'obstacle', 'ally', 'player');
+      tile.classList.remove('ally-path-duck', 'ally-path-frog', 'player-path', 'obstacle', 'wave', 'bush', 'ally', 'player');
 
       // Content
       let content = '';
@@ -1405,8 +1456,7 @@ function render() {
       // Obstacles
       const obstacle = findObstacle(r, c);
       if (obstacle) {
-        content = obstacle.type === 'wave' ? EMOJI.wave : EMOJI.bush;
-        tile.classList.add('obstacle');
+        tile.classList.add('obstacle', obstacle.type);
       }
 
       // Totems are now rendered as sprites, no need to show on tile
@@ -1464,14 +1514,12 @@ function updateAllySprites() {
     let sprite = existingMap.get(allyId);
 
     if (!sprite) {
-      // Create new sprite
+      // Create new sprite (image via CSS background)
       sprite = document.createElement('div');
       sprite.className = `ally-sprite ${ally.type}-ally`;
       sprite.dataset.allyId = allyId;
-      sprite.textContent = ally.type === 'duck' ? EMOJI.duckAlly : EMOJI.frogAlly;
       sprite.style.width = (cellWidth * 0.85) + 'px';
       sprite.style.height = (cellHeight * 0.85) + 'px';
-      sprite.style.fontSize = (cellHeight * 0.5) + 'px';
       container.appendChild(sprite);
     }
 
@@ -1506,45 +1554,41 @@ function updatePlayerSprites() {
   const duckSprite = document.getElementById('duckSprite');
   duckSprite.style.width = cellWidth + 'px';
   duckSprite.style.height = cellHeight + 'px';
-  duckSprite.style.fontSize = (cellHeight * 0.6) + 'px';
   duckSprite.style.left = (padding + duck.col * (cellWidth + gap)) + 'px';
   duckSprite.style.top = (padding + duck.row * (cellHeight + gap)) + 'px';
   document.getElementById('duckSpriteBadge').textContent = duck.hp;
   
-  // Update totem indicator
-  let duckTotem = duckSprite.querySelector('.totem-indicator');
+  // Update totem indicator (duck carries duck totem)
+  let duckTotemInd = duckSprite.querySelector('.totem-indicator');
   if (duck.hasTotem) {
-    if (!duckTotem) {
-      duckTotem = document.createElement('span');
-      duckTotem.className = 'totem-indicator';
-      duckSprite.appendChild(duckTotem);
+    if (!duckTotemInd) {
+      duckTotemInd = document.createElement('span');
+      duckTotemInd.className = 'totem-indicator duck-totem-ind';
+      duckSprite.appendChild(duckTotemInd);
     }
-    duckTotem.textContent = EMOJI.duckTotem;
-  } else if (duckTotem) {
-    duckTotem.remove();
+  } else if (duckTotemInd) {
+    duckTotemInd.remove();
   }
-  
+
   // Frog sprite
   const frog = game.players.frog;
   const frogSprite = document.getElementById('frogSprite');
   frogSprite.style.width = cellWidth + 'px';
   frogSprite.style.height = cellHeight + 'px';
-  frogSprite.style.fontSize = (cellHeight * 0.6) + 'px';
   frogSprite.style.left = (padding + frog.col * (cellWidth + gap)) + 'px';
   frogSprite.style.top = (padding + frog.row * (cellHeight + gap)) + 'px';
   document.getElementById('frogSpriteBadge').textContent = frog.hp;
-  
-  // Update totem indicator
-  let frogTotem = frogSprite.querySelector('.totem-indicator');
+
+  // Update totem indicator (frog carries frog/snake totem)
+  let frogTotemInd = frogSprite.querySelector('.totem-indicator');
   if (frog.hasTotem) {
-    if (!frogTotem) {
-      frogTotem = document.createElement('span');
-      frogTotem.className = 'totem-indicator';
-      frogSprite.appendChild(frogTotem);
+    if (!frogTotemInd) {
+      frogTotemInd = document.createElement('span');
+      frogTotemInd.className = 'totem-indicator frog-totem-ind';
+      frogSprite.appendChild(frogTotemInd);
     }
-    frogTotem.textContent = EMOJI.snakeTotem;
-  } else if (frogTotem) {
-    frogTotem.remove();
+  } else if (frogTotemInd) {
+    frogTotemInd.remove();
   }
 
   // Update totem sprites
