@@ -134,8 +134,6 @@
         -4px -4px 8px var(--shadow-l);
     }
     .tile.duck-king {
-      grid-column: 8 / 10;
-      grid-row: 1 / 3;
       border: 3px solid var(--duck-color);
       background-image: url('duck-king.png');
       background-size: 85%;
@@ -143,8 +141,6 @@
       background-repeat: no-repeat;
     }
     .tile.frog-king {
-      grid-column: 1 / 3;
-      grid-row: 14 / 16;
       border: 3px solid var(--frog-color);
       background-image: url('frog-king.png');
       background-size: 85%;
@@ -833,15 +829,15 @@
       box-shadow:
         0 2px 4px var(--shadow-d);
     }
-    .score-duck, .score-frog {
+    .score-left, .score-right {
       font-size: clamp(0.85rem, 3vw, 1rem);
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: clamp(3px, 1vw, 4px);
     }
-    .score-duck { color: #f39c12; }
-    .score-frog { color: #27ae60; }
+    .score-left.duck, .score-right.duck { color: #f39c12; }
+    .score-left.frog, .score-right.frog { color: #27ae60; }
     .score-icon {
       width: clamp(16px, 5vw, 20px);
       height: clamp(16px, 5vw, 20px);
@@ -890,6 +886,17 @@
         inset 2px 2px 4px var(--shadow-d),
         inset -2px -2px 4px var(--shadow-l);
       position: relative;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .obstacle-icon {
+      width: clamp(14px, 4vw, 18px);
+      height: clamp(14px, 4vw, 18px);
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: inline-block;
     }
     .power-counter.ready {
       animation: pulse-glow 1s infinite;
@@ -920,6 +927,9 @@
       border: none;
       border-radius: clamp(8px, 2.5vw, 10px);
       background: var(--bg);
+      background-size: 75%;
+      background-position: center;
+      background-repeat: no-repeat;
       font-size: clamp(1rem, 3vw, 1.2rem);
       cursor: pointer;
       box-shadow:
@@ -1062,11 +1072,11 @@
 
 <!-- ============ GAME SCREEN ============ -->
 <div class="screen" id="gameScreen">
-  <!-- Match Score - тонкий рядок над полем -->
+  <!-- Match Score - тонкий рядок над полем (human left, AI right) -->
   <div class="match-score-bar" id="matchScore">
-    <span class="score-frog"><span class="score-icon frog-icon"></span> <span id="frogWins">0</span></span>
+    <span class="score-left" id="scoreLeft"><span class="score-icon" id="leftIcon"></span> <span id="leftWins">0</span></span>
     <span class="score-round">Раунд <span id="roundNum">1</span></span>
-    <span class="score-duck"><span id="duckWins">0</span> <span class="score-icon duck-icon"></span></span>
+    <span class="score-right" id="scoreRight"><span id="rightWins">0</span> <span class="score-icon" id="rightIcon"></span></span>
   </div>
 
   <div class="game-top">
@@ -1083,11 +1093,11 @@
   <div class="game-bottom">
     <!-- Каунтер + кнопки сил -->
     <div class="powers-bar">
-      <span class="power-counter" id="obstaclesCounter">⚡ 0/3<span class="power-badge hidden" id="powerBadge">0</span></span>
-      <button class="power-btn-small" id="powerSpawnAlly" onclick="usePower('spawnAlly')" disabled>🐣</button>
-      <button class="power-btn-small" id="powerDoubleMove" onclick="usePower('doubleMove')" disabled>⚡</button>
-      <button class="power-btn-small" id="powerKillAlly" onclick="usePower('killAlly')" disabled>💀</button>
-      <button class="power-btn-small" id="powerFreeze" onclick="usePower('freeze')" disabled>❄️</button>
+      <span class="power-counter" id="obstaclesCounter"><span class="obstacle-icon" id="obstacleIcon"></span> <span id="obstacleCount">0/3</span><span class="power-badge hidden" id="powerBadge">0</span></span>
+      <button class="power-btn-small" id="powerSpawnAlly" onclick="usePower('spawnAlly')" disabled></button>
+      <button class="power-btn-small" id="powerDoubleMove" onclick="usePower('doubleMove')" disabled></button>
+      <button class="power-btn-small" id="powerKillAlly" onclick="usePower('killAlly')" disabled></button>
+      <button class="power-btn-small" id="powerFreeze" onclick="usePower('freeze')" disabled></button>
     </div>
 
     <!-- Такт + меню + пауза -->
@@ -1129,7 +1139,7 @@
 <div class="modal" id="roundModal">
   <div class="modal-content">
     <h2 id="roundTitle">Раунд 2</h2>
-    <p id="roundScore"><span class="score-icon duck-icon"></span> <span id="roundDuckWins">1</span> : <span id="roundFrogWins">0</span> <span class="score-icon frog-icon"></span></p>
+    <p id="roundScore"><span class="score-icon" id="roundLeftIcon"></span> <span id="roundLeftWins">0</span> : <span id="roundRightWins">0</span> <span class="score-icon" id="roundRightIcon"></span></p>
   </div>
 </div>
 
@@ -1266,6 +1276,21 @@ const findTotem = (r, c) => {
   }
   return null;
 };
+
+// Board flip helpers - convert between real coords (game logic) and display coords (visual)
+function toDisplayCoords(row, col) {
+  if (game.humanPlayer === 'duck') {
+    return { row: 14 - row, col: 8 - col };
+  }
+  return { row, col };
+}
+
+function fromDisplayCoords(displayRow, displayCol) {
+  if (game.humanPlayer === 'duck') {
+    return { row: 14 - displayRow, col: 8 - displayCol };
+  }
+  return { row: displayRow, col: displayCol };
+}
 
 const isTileBlocked = (r, c) => {
   if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return true;
@@ -1421,13 +1446,35 @@ function initBoard() {
   boardEl.innerHTML = '';
   tileCache.clear();
 
+  const flipped = game.humanPlayer === 'duck';
+
   // Kings first (images via CSS background)
+  // Duck king: real position cols 7-8, rows 0-1
   const duckKing = document.createElement('div');
   duckKing.className = 'tile king duck-king';
+  if (flipped) {
+    // When flipped: duck king goes to bottom-left (display)
+    duckKing.style.gridColumn = '1 / 3';
+    duckKing.style.gridRow = '14 / 16';
+  } else {
+    // Normal: duck king at top-right
+    duckKing.style.gridColumn = '8 / 10';
+    duckKing.style.gridRow = '1 / 3';
+  }
   boardEl.appendChild(duckKing);
 
+  // Frog king: real position cols 0-1, rows 13-14
   const frogKing = document.createElement('div');
   frogKing.className = 'tile king frog-king';
+  if (flipped) {
+    // When flipped: frog king goes to top-right (display)
+    frogKing.style.gridColumn = '8 / 10';
+    frogKing.style.gridRow = '1 / 3';
+  } else {
+    // Normal: frog king at bottom-left
+    frogKing.style.gridColumn = '1 / 3';
+    frogKing.style.gridRow = '14 / 16';
+  }
   boardEl.appendChild(frogKing);
 
   // Create all tiles once
@@ -1437,10 +1484,14 @@ function initBoard() {
 
       const tile = document.createElement('div');
       tile.className = 'tile';
+      // Store REAL coordinates in dataset (for game logic)
       tile.dataset.row = r;
       tile.dataset.col = c;
-      tile.style.gridColumn = c + 1;
-      tile.style.gridRow = r + 1;
+
+      // Use DISPLAY coordinates for grid positioning
+      const display = toDisplayCoords(r, c);
+      tile.style.gridColumn = display.col + 1;
+      tile.style.gridRow = display.row + 1;
 
       // Zone styling (static, never changes)
       const zone = isKingZone(r, c);
@@ -1586,10 +1637,11 @@ function updateAllySprites() {
     }
 
     // Update position (with animation via CSS transition)
+    const allyDisplay = toDisplayCoords(ally.row, ally.col);
     const offsetX = (cellWidth - cellWidth * 0.85) / 2;
     const offsetY = (cellHeight - cellHeight * 0.85) / 2;
-    sprite.style.left = (padding + ally.col * (cellWidth + gap) + offsetX) + 'px';
-    sprite.style.top = (padding + ally.row * (cellHeight + gap) + offsetY) + 'px';
+    sprite.style.left = (padding + allyDisplay.col * (cellWidth + gap) + offsetX) + 'px';
+    sprite.style.top = (padding + allyDisplay.row * (cellHeight + gap) + offsetY) + 'px';
   });
 
   // Remove sprites for dead allies with fade out
@@ -1614,10 +1666,11 @@ function updatePlayerSprites() {
   // Duck sprite
   const duck = game.players.duck;
   const duckSprite = document.getElementById('duckSprite');
+  const duckDisplay = toDisplayCoords(duck.row, duck.col);
   duckSprite.style.width = cellWidth + 'px';
   duckSprite.style.height = cellHeight + 'px';
-  duckSprite.style.left = (padding + duck.col * (cellWidth + gap)) + 'px';
-  duckSprite.style.top = (padding + duck.row * (cellHeight + gap)) + 'px';
+  duckSprite.style.left = (padding + duckDisplay.col * (cellWidth + gap)) + 'px';
+  duckSprite.style.top = (padding + duckDisplay.row * (cellHeight + gap)) + 'px';
   document.getElementById('duckSpriteBadge').textContent = duck.hp;
   
   // Update totem indicator (duck carries duck totem)
@@ -1635,10 +1688,11 @@ function updatePlayerSprites() {
   // Frog sprite
   const frog = game.players.frog;
   const frogSprite = document.getElementById('frogSprite');
+  const frogDisplay = toDisplayCoords(frog.row, frog.col);
   frogSprite.style.width = cellWidth + 'px';
   frogSprite.style.height = cellHeight + 'px';
-  frogSprite.style.left = (padding + frog.col * (cellWidth + gap)) + 'px';
-  frogSprite.style.top = (padding + frog.row * (cellHeight + gap)) + 'px';
+  frogSprite.style.left = (padding + frogDisplay.col * (cellWidth + gap)) + 'px';
+  frogSprite.style.top = (padding + frogDisplay.row * (cellHeight + gap)) + 'px';
   document.getElementById('frogSpriteBadge').textContent = frog.hp;
 
   // Update totem indicator (frog carries frog/snake totem)
@@ -1666,11 +1720,12 @@ function updateTotemSprites(cellWidth, cellHeight, padding, gap) {
     snakeSprite.classList.add('hidden');
   } else {
     snakeSprite.classList.remove('hidden');
+    const snakeDisplay = toDisplayCoords(snakeTotem.row, snakeTotem.col);
     snakeSprite.style.width = cellWidth + 'px';
     snakeSprite.style.height = cellHeight + 'px';
     snakeSprite.style.fontSize = (cellHeight * 0.5) + 'px';
-    snakeSprite.style.left = (padding + snakeTotem.col * (cellWidth + gap)) + 'px';
-    snakeSprite.style.top = (padding + snakeTotem.row * (cellHeight + gap)) + 'px';
+    snakeSprite.style.left = (padding + snakeDisplay.col * (cellWidth + gap)) + 'px';
+    snakeSprite.style.top = (padding + snakeDisplay.row * (cellHeight + gap)) + 'px';
   }
 
   const duckTotem = game.totems.duck;
@@ -1680,11 +1735,12 @@ function updateTotemSprites(cellWidth, cellHeight, padding, gap) {
     duckTotemSprite.classList.add('hidden');
   } else {
     duckTotemSprite.classList.remove('hidden');
+    const duckTotemDisplay = toDisplayCoords(duckTotem.row, duckTotem.col);
     duckTotemSprite.style.width = cellWidth + 'px';
     duckTotemSprite.style.height = cellHeight + 'px';
     duckTotemSprite.style.fontSize = (cellHeight * 0.5) + 'px';
-    duckTotemSprite.style.left = (padding + duckTotem.col * (cellWidth + gap)) + 'px';
-    duckTotemSprite.style.top = (padding + duckTotem.row * (cellHeight + gap)) + 'px';
+    duckTotemSprite.style.left = (padding + duckTotemDisplay.col * (cellWidth + gap)) + 'px';
+    duckTotemSprite.style.top = (padding + duckTotemDisplay.row * (cellHeight + gap)) + 'px';
   }
 }
 
@@ -2069,23 +2125,30 @@ function gameWin(playerType) {
   const name = playerType === 'duck' ? 'Каченя' : 'Жабка';
   const isHuman = playerType === game.humanPlayer;
 
+  // Human/AI wins for display (human always on left)
+  const humanWins = game.match[game.humanPlayer + 'Wins'];
+  const aiWins = game.match[game.aiPlayer + 'Wins'];
+
   // Перевіряємо чи це фінальна перемога в матчі
   if (game.match.duckWins >= WINS_NEEDED || game.match.frogWins >= WINS_NEEDED) {
     // Фінальна перемога в матчі!
     if (isHuman) {
       document.getElementById('winnerText').innerHTML = `<span class="modal-icon trophy-icon"></span> <span class="modal-icon ${iconClass}"></span> Перемога в матчі!`;
-      document.getElementById('winnerDesc').textContent = `${game.match.duckWins} : ${game.match.frogWins}`;
+      document.getElementById('winnerDesc').textContent = `${humanWins} : ${aiWins}`;
     } else {
       document.getElementById('winnerText').innerHTML = `<span class="modal-icon ${iconClass}"></span> Програш`;
-      document.getElementById('winnerDesc').textContent = `${game.match.duckWins} : ${game.match.frogWins}`;
+      document.getElementById('winnerDesc').textContent = `${humanWins} : ${aiWins}`;
     }
     document.getElementById('winModal').classList.add('show');
   } else {
     // Ще не кінець матчу - показуємо модалку раунду і автоматично переходимо
     game.match.round++;
     document.getElementById('roundTitle').textContent = `Раунд ${game.match.round}`;
-    document.getElementById('roundDuckWins').textContent = game.match.duckWins;
-    document.getElementById('roundFrogWins').textContent = game.match.frogWins;
+    // Setup round modal icons (human on left, AI on right)
+    document.getElementById('roundLeftIcon').className = 'score-icon ' + game.humanPlayer + '-icon';
+    document.getElementById('roundRightIcon').className = 'score-icon ' + game.aiPlayer + '-icon';
+    document.getElementById('roundLeftWins').textContent = humanWins;
+    document.getElementById('roundRightWins').textContent = aiWins;
     document.getElementById('roundModal').classList.add('show');
 
     // Автоматично починаємо наступний раунд через 1.5 секунди
@@ -2095,9 +2158,53 @@ function gameWin(playerType) {
   }
 }
 
+// Setup score bar - human on left, AI on right
+function setupScoreBar() {
+  const humanType = game.humanPlayer;
+  const aiType = game.aiPlayer;
+
+  const scoreLeft = document.getElementById('scoreLeft');
+  const scoreRight = document.getElementById('scoreRight');
+  const leftIcon = document.getElementById('leftIcon');
+  const rightIcon = document.getElementById('rightIcon');
+
+  // Set classes for coloring
+  scoreLeft.className = 'score-left ' + humanType;
+  scoreRight.className = 'score-right ' + aiType;
+
+  // Set icons
+  leftIcon.className = 'score-icon ' + humanType + '-icon';
+  rightIcon.className = 'score-icon ' + aiType + '-icon';
+
+  // Setup power button icons
+  setupPowerButtons();
+
+  updateMatchScore();
+}
+
+// Setup power button icons based on human/AI player
+function setupPowerButtons() {
+  const humanType = game.humanPlayer;
+  const aiType = game.aiPlayer;
+
+  // spawnAlly, doubleMove - human icons
+  document.getElementById('powerSpawnAlly').style.backgroundImage = `url('${humanType}-unit-plus.png')`;
+  document.getElementById('powerDoubleMove').style.backgroundImage = `url('${humanType}-player-wing.png')`;
+
+  // killAlly, freeze - AI (enemy) icons
+  document.getElementById('powerKillAlly').style.backgroundImage = `url('${aiType}-unit-minus.png')`;
+  document.getElementById('powerFreeze').style.backgroundImage = `url('${aiType}-player-freeze.png')`;
+
+  // Obstacle icon - human's obstacle type (duck = lily/wave, frog = bush)
+  document.getElementById('obstacleIcon').style.backgroundImage = `url('${humanType}-obstacle.png')`;
+}
+
 function updateMatchScore() {
-  document.getElementById('duckWins').textContent = game.match.duckWins;
-  document.getElementById('frogWins').textContent = game.match.frogWins;
+  const humanWins = game.match[game.humanPlayer + 'Wins'];
+  const aiWins = game.match[game.aiPlayer + 'Wins'];
+
+  document.getElementById('leftWins').textContent = humanWins;
+  document.getElementById('rightWins').textContent = aiWins;
   document.getElementById('roundNum').textContent = game.match.round;
 }
 
@@ -2212,12 +2319,13 @@ function closeModal() {
 // ============ POWERS (BUFFS/DEBUFFS) ============
 function updateObstaclesCounter() {
   const counter = document.getElementById('obstaclesCounter');
+  const countEl = document.getElementById('obstacleCount');
   const badge = document.getElementById('powerBadge');
-  if (!counter) return;
+  if (!counter || !countEl) return;
 
   const player = game.players[game.humanPlayer];
   if (!player) {
-    counter.childNodes[0].textContent = `⚡ 0/${OBSTACLES_FOR_POWER}`;
+    countEl.textContent = `0/${OBSTACLES_FOR_POWER}`;
     if (badge) {
       badge.classList.add('hidden');
     }
@@ -2230,7 +2338,7 @@ function updateObstaclesCounter() {
   const count = destroyed % OBSTACLES_FOR_POWER;
   const powersAvailable = Math.floor(destroyed / OBSTACLES_FOR_POWER) - used;
 
-  counter.childNodes[0].textContent = `⚡ ${count}/${OBSTACLES_FOR_POWER}`;
+  countEl.textContent = `${count}/${OBSTACLES_FOR_POWER}`;
 
   // Оновлюємо бейдж з кількістю доступних сил
   if (badge) {
@@ -2370,11 +2478,14 @@ function selectCharacter(character) {
   game.humanPlayer = character;
   game.aiPlayer = character === 'duck' ? 'frog' : 'duck';
 
+  // Reset board to apply flip based on character choice
+  boardInitialized = false;
+
   // Show game screen
   showScreen('gameScreen');
 
-  // Оновлюємо рахунок матчу та каунтер сил
-  updateMatchScore();
+  // Setup score bar (human left, AI right)
+  setupScoreBar();
   updateObstaclesCounter();
 
   render();
@@ -3041,13 +3152,14 @@ function handleBoardInteraction(clientX, clientY) {
   const cellPlusGapWidth = cellWidth + gap;
   const cellPlusGapHeight = cellHeight + gap;
 
-  // Визначаємо col і row
-  const col = Math.floor(x / cellPlusGapWidth);
-  const row = Math.floor(y / cellPlusGapHeight);
+  // Визначаємо col і row (display coordinates)
+  const displayCol = Math.floor(x / cellPlusGapWidth);
+  const displayRow = Math.floor(y / cellPlusGapHeight);
 
-  // Перевіряємо межі
-  if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
-    handleTileClick(row, col);
+  // Перевіряємо межі та конвертуємо в real coordinates
+  if (displayRow >= 0 && displayRow < ROWS && displayCol >= 0 && displayCol < COLS) {
+    const real = fromDisplayCoords(displayRow, displayCol);
+    handleTileClick(real.row, real.col);
   }
 }
 
